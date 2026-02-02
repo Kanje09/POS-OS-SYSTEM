@@ -11,6 +11,24 @@ export const getProducts = async (req: Request, res: Response) => {
 export const createProduct = async (req: Request, res: Response) => {
   const { name, price, quantity } = req.body;
 
+  if (!name || !price || !quantity) {
+    return res.status(400).json({
+      message: "Name, Price and Quantity is required."
+    });
+  }
+
+  if (typeof price !== "number" || typeof quantity !== "number") {
+    return res.status(400).json({
+      message: "Price and Quantity must be a number."
+    });
+  }
+
+  if (name == 0) {
+    return res.status(400).json({
+      message: "Product already existed."
+    });
+  }
+
   await pool.query(
     "INSERT INTO product (name, price, quantity) VALUES (?, ?, ?)",
     [name, price, quantity]

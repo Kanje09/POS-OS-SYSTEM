@@ -1,8 +1,8 @@
-import { json } from "node:stream/consumers";
+import type { Request, Response } from "express";
 import pool from "../database/db";
 
 //Fetch all order from the database.
-export const getOrder = async (req: any, res: any) => {
+export const getOrder = async (req: Request, res: Response) => {
     try {
         const [rows] = await pool.query("SELECT * FROM order");
         res.json(rows);
@@ -13,7 +13,7 @@ export const getOrder = async (req: any, res: any) => {
 };
 
 //Add aa new order to the database.
-export const CreateOrder = async (req: any, res: any) => {
+export const CreateOrder = async (req: Request, res: Response) => {
     try {
         const { total } = req.body;
 
@@ -29,10 +29,22 @@ export const CreateOrder = async (req: any, res: any) => {
 };
 
 //Update an existing product in the database.
-export const UpdateOrder = async (req: any, res: any) => {
+export const UpdateOrder = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { total } = req.body;
+
+        if (!id || !total) {
+            return res.status(400).json({
+                message: "ID and Total are required."
+            });
+        };
+
+        if (typeof total !== "number") {
+            return res.status(400).json({
+                message: "Total must be a number."
+            });
+        }
 
         await pool.query(
             "UPDATE order SET total = ? WHERE id = ?",
@@ -45,7 +57,7 @@ export const UpdateOrder = async (req: any, res: any) => {
 };
 
 // Delete a product from the database.
-export const DeleteOrder = async (req: any, res: any) => {
+export const DeleteOrder = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
