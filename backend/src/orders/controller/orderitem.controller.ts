@@ -1,4 +1,4 @@
-import pool from "../database/db";
+import pool from "../../database/db";
 import type { Request, Response } from "express";
 import { getOrderItemService } from "../services/getOrderItemService";
 

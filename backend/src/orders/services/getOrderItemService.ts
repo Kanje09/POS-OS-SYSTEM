@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
-import pool from "../database/db";
+import pool from "../../database/db";
 
 interface ServiceResult {
-    success: boolean;
-    data?: any;
-    error?: any;
+  success: boolean;
+  data?: any;
+  error?: any;
 }
 
 //Get all order items
@@ -22,11 +22,11 @@ export const getOrderItemService = async (): Promise<ServiceResult> => {
        ORDER BY oi.created_at DESC`
     );
 
-        return { success: true, data: rows };
-    } catch (err) {
-        console.error("Service error:", err);
-        return { success: false, error: err};
-    }
+    return { success: true, data: rows };
+  } catch (err) {
+    console.error("Service error:", err);
+    return { success: false, error: err };
+  }
 };
 
 export const getOrderItemsByOrderId = async (orderId: number): Promise<ServiceResult> => {
@@ -41,7 +41,7 @@ export const getOrderItemsByOrderId = async (orderId: number): Promise<ServiceRe
        WHERE oi.order_id = ?`,
       [orderId]
     );
-    
+
     return { success: true, data: rows };
   } catch (err) {
     return { success: false, error: err };

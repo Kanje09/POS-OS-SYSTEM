@@ -1,6 +1,6 @@
 import pool from "../../database/db"
 import type { Request, Response } from "express";
-import { registerUser, loginUser } from "../../services/auth.service";
+import { registerUser, loginUser } from "../services/auth.service";
 
 // Fetch all user credentials from the database.
 export const getAuthority = async (req: Request, res: Response) => {

@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import pool from "../database/db";
+import pool from "../../database/db";
 
 //Fetch all order from the database.
 export const getOrder = async (req: Request, res: Response) => {

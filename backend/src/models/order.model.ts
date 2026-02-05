@@ -8,7 +8,7 @@ export interface Order {
   order_type: "dine-in" | "takeout" | "delivery" | "online";
   table_number?: number;     // For dine-in
   delivery_address?: string; // For delivery
-  notes?: string;
+  notes?: string; 
   created_at: Date;
   updated_at: Date;
 }

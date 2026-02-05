@@ -1,8 +1,7 @@
-import pool from "../database/db";
+import pool from "../../database/db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { config } from "../config/index.js";
-import { CreateUserInput, LoginInput, User } from "../models/user.model.js";
+import { config } from "../../config/index.js";
 import type { Response, Request } from "express";
 
 //Register a new user (Admin, Cashier, Customer)

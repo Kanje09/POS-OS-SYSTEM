@@ -15,12 +15,6 @@ app.use("/api", AuthorityRoute);
 app.use("/api", orderRoute);
 app.use("/api", orderItemRoute);
 
-app.post("/api/MultipleInput", async (req, Res) => {
-  const users = req.body;
-
-  
-});
-
 app.get("/", (req, res) => {
   res.send("Backend is running 🚀");
 });
