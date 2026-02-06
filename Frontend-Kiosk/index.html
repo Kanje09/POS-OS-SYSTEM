@@ -5,19 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Turon POS - Point of Sale System</title>
-
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <!-- Stylesheet -->
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-
-    <!-- POS Header -->
     <header class="pos-header">
         <div class="pos-logo">
             <span>🍌</span>
@@ -35,47 +29,38 @@
         </div>
     </header>
 
-    <!-- Main POS Container -->
     <div class="pos-container">
-
-        <!-- Left Side – Products -->
         <div class="products-section">
             <div class="section-header">
                 <h2>Select Products</h2>
                 <p>Click on items to add to order</p>
             </div>
-
             <div class="products-grid">
                 <div class="product-item" onclick="addToCart('classic', 'Classic Turon', 35)">
                     <div class="product-icon">🍌</div>
                     <div class="product-name">Classic Turon</div>
                     <div class="product-price">₱35.00</div>
                 </div>
-
                 <div class="product-item" onclick="addToCart('ube', 'Ube Turon', 45)">
                     <div class="product-icon">💜</div>
                     <div class="product-name">Ube Turon</div>
                     <div class="product-price">₱45.00</div>
                 </div>
-
                 <div class="product-item" onclick="addToCart('cheese', 'Cheese Turon', 40)">
                     <div class="product-icon">🧀</div>
                     <div class="product-name">Cheese Turon</div>
                     <div class="product-price">₱40.00</div>
                 </div>
-
                 <div class="product-item" onclick="addToCart('chocolate', 'Chocolate Turon', 50)">
                     <div class="product-icon">🍫</div>
                     <div class="product-name">Chocolate Turon</div>
                     <div class="product-price">₱50.00</div>
                 </div>
-
                 <div class="product-item" onclick="addToCart('mango', 'Mango Turon', 55)">
                     <div class="product-icon">🥭</div>
                     <div class="product-name">Mango Turon</div>
                     <div class="product-price">₱55.00</div>
                 </div>
-
                 <div class="product-item" onclick="addToCart('special', 'Special Mix Turon', 65)">
                     <div class="product-icon">⭐</div>
                     <div class="product-name">Special Mix</div>
@@ -84,10 +69,7 @@
             </div>
         </div>
 
-        <!-- Right Side – Cart -->
         <div class="cart-section" id="cart-section">
-
-            <!-- Header -->
             <div class="cart-header">
                 <button class="back-btn" onclick="goBack()">
                     <svg viewBox="0 0 24 24">
@@ -100,7 +82,6 @@
                 </div>
             </div>
 
-            <!-- Scrollable Item List -->
             <div class="cart-items" id="cart-items">
                 <div class="cart-empty">
                     <div class="cart-empty-icon">🛒</div>
@@ -109,7 +90,6 @@
                 </div>
             </div>
 
-            <!-- Subtotal / Tax / Total -->
             <div class="cart-summary" id="cart-summary" style="display: none;">
                 <div class="summary-row">
                     <span>Subtotal:</span>
@@ -125,7 +105,6 @@
                 </div>
             </div>
 
-            <!-- Action Buttons -->
             <div class="cart-actions">
                 <button class="btn btn-checkout" id="checkout-btn" onclick="checkout()" disabled>
                     Process Payment
@@ -137,19 +116,56 @@
         </div>
     </div>
 
-    <!-- Mobile Cart Toggle -->
+    <div class="modal-overlay" id="receipt-modal">
+        <div class="receipt-card">
+            <div class="receipt-header">
+                <h3>TURON POS</h3>
+                <p>Official Receipt</p>
+                <p id="r-date-time"></p>
+                <p>Order: #<span id="r-order-no"></span></p>
+            </div>
+
+            <div id="r-items-list" class="receipt-items">
+            </div>
+
+            <div class="receipt-total-section">
+                <div class="receipt-line">
+                    <span>SUBTOTAL</span>
+                    <span id="r-subtotal"></span>
+                </div>
+                <div class="receipt-line" style="font-weight: bold; font-size: 1.1rem; margin-top: 5px;">
+                    <span>TOTAL</span>
+                    <span id="r-total"></span>
+                </div>
+                <div class="receipt-line" style="margin-top: 10px; color: #555;">
+                    <span>CASH TENDERED</span>
+                    <span id="r-cash"></span>
+                </div>
+                <div class="receipt-line" style="color: #555;">
+                    <span>CHANGE</span>
+                    <span id="r-change"></span>
+                </div>
+            </div>
+
+            <div class="receipt-footer">
+                <p>THANK YOU FOR YOUR PURCHASE!</p>
+                <p>Please come again.</p>
+                <button class="btn-done" onclick="closeReceipt()">Done / New Order</button>
+            </div>
+        </div>
+    </div>
+
     <button class="cart-toggle" onclick="toggleCart()">
         🛒
         <span class="cart-badge" id="cart-badge" style="display: none;">0</span>
     </button>
 
-    <!-- Notification Toast -->
     <div class="notification" id="notification">
         <span class="notification-icon">✓</span>
         <span id="notification-text"></span>
     </div>
 
-    <!-- JavaScript -->
+
     <script src="script.js"></script>
 </body>
 
