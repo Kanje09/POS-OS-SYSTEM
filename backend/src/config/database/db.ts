@@ -6,6 +6,9 @@ const pool = mysql.createPool({
   user: config.DB_USER,
   password: config.DB_PASSWORD,
   database: config.DB_NAME,
+  port: config.DB_PORT,  // ← ADD THIS
+  ssl: { rejectUnauthorized: false },  // ← ADD THIS (disable SSL for Railway proxy)
+  connectTimeout: 60000,  // ← ADD THIS (60 seconds)
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
