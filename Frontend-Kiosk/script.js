@@ -1,10 +1,19 @@
 let cart = [];
 let orderNumber = 1;
 let isLocked = true;
-
 // Initialize Lockscreen
 function initLockscreen() {
   const lockscreen = document.getElementById("lockscreen");
+  const logoImg = document.getElementById("lockscreen-logo");
+
+  // Set the logo path dynamically
+  logoImg.src = "./images/logo.png"; // Change to your logo filename
+
+  // Handle image load error (fallback)
+  logoImg.onerror = function () {
+    console.error("Logo failed to load");
+    logoImg.src = "./Assets/images/logo.png"; // Check your folder structure
+  };
 
   // Unlock on any touch or click
   document.addEventListener("click", unlockScreen);

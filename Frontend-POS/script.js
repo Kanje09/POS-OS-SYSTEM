@@ -600,19 +600,19 @@ function calculateChange() {
 
 function generateGCashQR() {
   if (!currentOrderData) return;
-
   const qrcodeContainer = document.getElementById("qrcode");
   const totalAmount = parseFloat(currentOrderData.total_amount) || 0;
 
   // Clear container
   qrcodeContainer.innerHTML = "";
 
-  // Display your static GCash QR code image
+  // Fixed path - remove leading slash
   qrcodeContainer.innerHTML = `
     <div style="text-align: center;">
-      <img src="/Assets/images/gcash-qr.png" 
+      <img src="./Assets/images/gcash-qr.png" 
            alt="GCash QR Code" 
-           style="width: 250px; height: 250px; border: 2px solid #0066cc; border-radius: 8px;">
+           style="width: 250px; height: 250px; border: 2px solid #0066cc; border-radius: 8px;"
+           onerror="this.onerror=null; this.src='https://via.placeholder.com/250/0066cc/ffffff?text=GCash+QR'; console.error('GCash QR image not found');">
       <p style="margin-top: 15px; font-size: 16px; font-weight: bold; color: #333;">
         Scan to Pay
       </p>
@@ -629,12 +629,12 @@ function generateGCashQR() {
       </div>
     </div>
   `;
+}
 
-  // Update amount display
-  const amountEl = document.getElementById("gcash-amount-text");
-  if (amountEl) {
-    amountEl.textContent = `₱${totalAmount.toFixed(2)}`;
-  }
+// Update amount display
+const amountEl = document.getElementById("gcash-amount-text");
+if (amountEl) {
+  amountEl.textContent = `₱${totalAmount.toFixed(2)}`;
 }
 
 async function processPayment(paymentMethod) {
