@@ -196,7 +196,7 @@ async function checkout() {
   if (cart.length === 0) return;
 
   try {
-    const API_BASE_URL = "http://localhost:5000/api";
+    const API_BASE_URL = "https://pos-os-system-1.onrender.com/api";
 
     const res = await fetch(`${API_BASE_URL}/order`, {
       method: "POST",
