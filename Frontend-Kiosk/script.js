@@ -125,19 +125,9 @@ function checkout() {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  // Simple Payment Flow
-  const cashStr = prompt(
-    `Total Amount: ₱${total.toFixed(2)}\nEnter cash amount:`,
-    total,
-  );
-  const cash = parseFloat(cashStr);
-
-  if (isNaN(cash) || cash < total) {
-    alert("Invalid amount or insufficient cash!");
-    return;
-  }
-
-  const change = cash - total;
+  // Payment: assume exact payment (no customer input required)
+  const cash = total;
+  const change = 0;
 
   // Prepare Receipt Data
   const now = new Date();
