@@ -52,25 +52,19 @@ function filterProducts(category) {
   const productItems = document.querySelectorAll(".product-item");
   const categoryBtns = document.querySelectorAll(".category-btn");
 
-  // Update active button
   categoryBtns.forEach((btn) => btn.classList.remove("active"));
   event.target.classList.add("active");
 
-  // Filter products
   productItems.forEach((item) => {
-    if (category === "all") {
+    const itemCategory = item.dataset.category;
+
+    if (category === "all" || itemCategory === category) {
       item.style.display = "block";
     } else {
-      const itemId = item.getAttribute("onclick");
-      if (itemId.includes(`'${category}'`)) {
-        item.style.display = "block";
-      } else {
-        item.style.display = "none";
-      }
+      item.style.display = "none";
     }
   });
 }
-
 // ========== REMOVED: Pickup functions now only in POS-System ==========
 
 function updateDateTime() {
