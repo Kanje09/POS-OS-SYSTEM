@@ -1,7 +1,7 @@
 import { apiCall, CONFIG } from "./config.js";
 
 // Configuration
-const API_BASE_URL = "http://127.0.0.1:5000/api"; // Update with your backend URL
+const API_BASE_URL = "http://127.0.0.1:3000/api"; // Update with your backend URL
 let currentStaffId = null;
 let currentOrderCode = null;
 let currentOrderData = null;

@@ -1,5 +1,5 @@
 export const CONFIG = {
-  API_BASE_URL: "http://localhost:5000/api",
+  API_BASE_URL: "http://localhost:3000/api",
 
   REQUEST_TIMEOUT: 10000,
   AUTO_REFRESH_INTERVAL: 10000,
