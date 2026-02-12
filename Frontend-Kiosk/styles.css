@@ -13,6 +13,145 @@
     --text-light: #666666;
 }
 
+/* Lockscreen Styles */
+.lockscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.lockscreen.unlock-animation {
+    animation: lockscreenFadeOut 0.6s ease-in-out forwards;
+}
+
+@keyframes lockscreenFadeOut {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.1);
+        pointer-events: none;
+    }
+}
+
+.lockscreen.lock-animation {
+    animation: lockscreenFadeIn 0.2s ease-in-out forwards;
+}
+
+@keyframes lockscreenFadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.lockscreen-content {
+    text-align: center;
+    animation: lockscreenBounce 0.8s ease-in-out infinite;
+}
+
+@keyframes lockscreenBounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.lockscreen-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    animation: lockscreenSpin 3s linear infinite;
+}
+
+@keyframes lockscreenSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.lockscreen-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    letter-spacing: 2px;
+}
+
+.lockscreen-subtitle {
+    font-size: 1rem;
+    color: var(--white);
+    opacity: 0.8;
+    margin-bottom: 2rem;
+    font-weight: 500;
+}
+
+.lockscreen-hint {
+    font-size: 0.9rem;
+    color: var(--primary);
+    opacity: 0.7;
+    margin-top: 2rem;
+    animation: lockscreenHintFade 1.5s ease-in-out infinite;
+}
+
+@keyframes lockscreenHintFade {
+    0%, 100% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}
+
+.lockscreen-pulse {
+    width: 200px;
+    height: 200px;
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    margin: 2rem auto 0;
+    animation: lockscreenPulse 2s ease-in-out infinite;
+}
+
+@keyframes lockscreenPulse {
+    0% {
+        width: 200px;
+        height: 200px;
+        opacity: 0.8;
+    }
+    100% {
+        width: 280px;
+        height: 280px;
+        opacity: 0;
+    }
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -108,6 +247,86 @@ body::-webkit-scrollbar {
     color: var(--white);
 }
 
+/* Pickup Button in Header */
+.btn-pickup-menu {
+    background: none;
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-pickup-menu:hover {
+    background: var(--primary);
+    color: var(--darker);
+}
+
+/* Left Sidebar Navigation */
+.sidebar-menu {
+    position: fixed;
+    left: 0;
+    top: 70px;
+    width: 200px;
+    height: calc(100vh - 70px);
+    background: var(--white);
+    border-right: 2px solid var(--border);
+    padding: 1.5rem 0;
+    overflow-y: auto;
+    z-index: 500;
+}
+
+.sidebar-header {
+    padding: 0 1rem 1rem;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 1rem;
+}
+
+.sidebar-header h3 {
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-light);
+    font-weight: 700;
+}
+
+.sidebar-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+}
+
+.category-btn {
+    background: transparent;
+    border: none;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text);
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+    border-radius: 0 6px 6px 0;
+}
+
+.category-btn:hover {
+    background: rgba(212, 175, 55, 0.1);
+    color: var(--primary);
+}
+
+.category-btn.active {
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--primary);
+    font-weight: 600;
+    border-left-color: var(--primary);
+}
+
 /* Main POS Container */
 .pos-container {
     display: grid;
@@ -115,6 +334,7 @@ body::-webkit-scrollbar {
     height: calc(100vh - 70px);
     gap: 0;
     margin-top: 70px;
+    margin-left: 200px;
 }
 
 /* Left Side - Products */
@@ -595,6 +815,155 @@ body::-webkit-scrollbar {
 
 .notification-icon {
     font-size: 1.5rem;
+}
+
+/* Pickup Code Styles in Receipt */
+.receipt-pickup-code {
+    border-top: 2px dashed var(--primary);
+    padding-top: 15px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+/* Pickup Modal */
+.pickup-card {
+    background: var(--white);
+    width: 450px;
+    max-width: 90%;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.close-pickup-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-light);
+    transition: color 0.2s ease;
+}
+
+.close-pickup-btn:hover {
+    color: var(--danger);
+}
+
+.pickup-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.pickup-header h2 {
+    font-size: 1.5rem;
+    color: var(--darker);
+    margin-bottom: 0.5rem;
+}
+
+.pickup-header p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+.pickup-input-section {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.pickup-code-input {
+    flex: 1;
+    padding: 12px;
+    font-size: 1.5rem;
+    text-align: center;
+    letter-spacing: 10px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    transition: border-color 0.2s ease;
+}
+
+.pickup-code-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+.btn-search-order {
+    padding: 12px 2rem;
+    background: var(--primary);
+    color: var(--darker);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-search-order:hover {
+    background: var(--primary-dark);
+}
+
+.pickup-result {
+    border-top: 2px solid var(--border);
+    padding-top: 1.5rem;
+}
+
+.order-found h3 {
+    font-size: 1.1rem;
+    color: var(--success);
+    margin-bottom: 1rem;
+}
+
+#pickup-order-items {
+    background: var(--light);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.pickup-item-entry {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.pickup-item-entry:last-child {
+    border-bottom: none;
+}
+
+#pickup-order-total {
+    text-align: right;
+    padding: 0.75rem;
+    background: var(--light);
+    border-radius: 8px;
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+.btn-mark-ready {
+    width: 100%;
+    padding: 12px;
+    background: var(--success);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn-mark-ready:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
 /* Responsive */

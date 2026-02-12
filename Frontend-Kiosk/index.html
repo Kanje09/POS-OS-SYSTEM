@@ -12,10 +12,21 @@
 </head>
 
 <body>
+    <!-- Lockscreen -->
+    <div class="lockscreen" id="lockscreen">
+        <div class="lockscreen-content">
+            <div class="lockscreen-icon">🍌</div>
+            <h1 class="lockscreen-title">TURON-AROUND</h1>
+            <p class="lockscreen-subtitle">TURON-AROUND KIOSK</p>
+            <p class="lockscreen-hint">Touch anywhere to unlock</p>
+            <div class="lockscreen-pulse"></div>
+        </div>
+    </div>
+
     <header class="pos-header">
         <div class="pos-logo">
             <span>🍌</span>
-            <h1>TURON POS</h1>
+            <h1>TURON-AROUND</h1>
         </div>
         <div class="pos-info">
             <div class="info-item">
@@ -28,6 +39,22 @@
             </div>
         </div>
     </header>
+
+    <!-- Left Sidebar Navigation -->
+    <aside class="sidebar-menu">
+        <div class="sidebar-header">
+            <h3>Categories</h3>
+        </div>
+        <div class="sidebar-categories">
+            <button class="category-btn active" onclick="filterProducts('all')">All Products</button>
+            <button class="category-btn" onclick="filterProducts('classic')">🍌 Classic</button>
+            <button class="category-btn" onclick="filterProducts('ube')">💜 Ube</button>
+            <button class="category-btn" onclick="filterProducts('cheese')">🧀 Cheese</button>
+            <button class="category-btn" onclick="filterProducts('chocolate')">🍫 Chocolate</button>
+            <button class="category-btn" onclick="filterProducts('mango')">🥭 Mango</button>
+            <button class="category-btn" onclick="filterProducts('special')">⭐ Special Mix</button>
+        </div>
+    </aside>
 
     <div class="pos-container">
         <div class="products-section">
@@ -143,13 +170,24 @@
                 </div>
             </div>
 
+            <div class="receipt-pickup-code">
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">PICKUP CODE</p>
+                <div class="pickup-code-display" id="r-pickup-code"
+                    style="font-size: 2rem; font-weight: bold; color: var(--primary); letter-spacing: 5px; text-align: center;">
+                    0000</div>
+                <p style="font-size: 0.8rem; color: #666; margin-top: 5px; text-align: center;">Customer shows this code
+                    to collect order</p>
+            </div>
+
             <div class="receipt-footer">
                 <p>THANK YOU FOR YOUR PURCHASE!</p>
                 <p>Please come again.</p>
-                <button class="btn-done" onclick="closeReceipt()">Done / New Order</button>
+                <button class="btn-done" onclick="closeReceipt()">Done / Return to Home</button>
             </div>
         </div>
     </div>
+
+    <!-- Pickup Screen Modal - MOVED TO POS-SYSTEM ONLY -->
 
     <button class="cart-toggle" onclick="toggleCart()">
         🛒

@@ -10,7 +10,7 @@ export const config = {
     DB_HOST: process.env.DB_HOST || 'localhost',
     DB_USER: process.env.DB_USER || 'root',
     DB_PASSWORD: process.env.DB_PASSWORD || 'Yasuo890',
-    DB_NAME: process.env.DB_NAME || 'mystorage',
+    DB_NAME: process.env.DB_NAME || 'myposdb',
     DB_PORT: parseInt(process.env.DB_PORT || '3306'),
 
     JWT_SECRET: process.env.JWT_SECRET || 'your_jwt_secret_key',

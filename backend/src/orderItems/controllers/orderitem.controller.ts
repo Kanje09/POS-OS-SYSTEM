@@ -1,6 +1,5 @@
-import pool from "../../database/db";
+import pool from "../../config/database/db";
 import type { Request, Response } from "express";
-import { getOrderItemService } from "../services/getOrderItemService";
 
 //Fetch all Order Items from the database.
 export const getOrderItem = async (req: Request, res: Response) => {
@@ -14,12 +13,7 @@ export const getOrderItem = async (req: Request, res: Response) => {
 
 export const getOrderItemController = async (req: Request, res: Response) => {
     try {
-        const result = await getOrderItemService();
 
-        res.json({
-            message: "Order Items fetched.",
-            data: result
-        });
     } catch (err) {
         res.status(500).json({ message: "Error fetching order items", err });
     };

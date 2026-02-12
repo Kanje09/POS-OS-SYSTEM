@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getReports, UpdateReport, DeleteReport } from '../controllers/report.controller';
+import { getReports, UpdateReport, DeleteReport } from '../Product/controllers/report.controller';
 
 const router = Router();
 

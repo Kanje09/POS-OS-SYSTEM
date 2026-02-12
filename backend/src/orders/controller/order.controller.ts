@@ -1,68 +1,65 @@
-import type { Request, Response } from "express";
-import pool from "../../database/db";
+import { Request, Response } from "express";
+import {
+    createOrderService,
+    findOrderByPickupCodeService,
+    getAllOrdersService,
+    updateOrderService,
+} from "../services/order.service";
 
-//Fetch all order from the database.
-export const getOrder = async (req: Request, res: Response) => {
+export async function getOrders(req: Request, res: Response) {
     try {
-        const [rows] = await pool.query("SELECT * FROM order");
-        res.json(rows);
-        res.json({ message: "Order Fetched." });
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching orders." })
-    };
-};
+        const orders = await getAllOrdersService();
+        res.json({ success: true, data: orders });
+    } catch (err: any) {
+        res.status(500).json({ message: "Failed to fetch orders", error: err.message });
+    }
+}
 
-//Add aa new order to the database.
-export const CreateOrder = async (req: Request, res: Response) => {
+export async function searchByCode(req: Request, res: Response) {
     try {
-        const { total } = req.body;
+        const code = String(req.params.code || "").trim();
+        console.log('🎯 Search endpoint hit with code:', code);
 
-        await pool.query(
-            "INSERT INTO order (total) VALUES (?)",
-            [total]
-        );
-
-        res.json({ message: "Order added." });
-    } catch (error) {
-        res.status(500).json({ message: "Error. Cannot add your order." })
-    };
-};
-
-//Update an existing product in the database.
-export const UpdateOrder = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
-        const { total } = req.body;
-
-        if (!id || !total) {
-            return res.status(400).json({
-                message: "ID and Total are required."
-            });
-        };
-
-        if (typeof total !== "number") {
-            return res.status(400).json({
-                message: "Total must be a number."
-            });
+        if (code.length !== 4) {
+            console.log('❌ Invalid code length');
+            return res.status(400).json({ message: "Invalid pickup code" });
         }
 
-        await pool.query(
-            "UPDATE order SET total = ? WHERE id = ?",
-            [total]
-        );
-        res.json({ message: "Update successfully." })
-    } catch (error) {
-        res.status(500).json({ message: "Error. Cannot update." });
-    };
-};
+        const order = await findOrderByPickupCodeService(code);
+        console.log('📦 Service returned:', order ? 'Order found' : 'No order');
 
-// Delete a product from the database.
-export const DeleteOrder = async (req: Request, res: Response) => {
+        if (!order) {
+            console.log('❌ Sending 404 response');
+            return res.status(404).json({ message: `Pickup code ${code} not found` });
+        }
+
+        console.log('✅ Sending success response');
+        res.json({ success: true, data: order });
+    } catch (err: any) {
+        console.error('💥 Error in searchByCode:', err);
+        res.status(500).json({ message: "Search failed", error: err.message });
+    }
+}
+
+export async function createOrder(req: Request, res: Response) {
     try {
-        const { id } = req.params;
+        const created = await createOrderService(req.body);
+        res.status(201).json({ success: true, data: created });
+    } catch (err: any) {
+        res.status(400).json({ message: "Cannot create order.", error: err.message || err });
+    }
+}
 
-        await pool.query("DELETE FROM product WHERE id = ?", [id]);
-    } catch (error) {
+export async function updateOrder(req: Request, res: Response) {
+    try {
+        const id = Number(req.params.id);
+        if (!id) return res.status(400).json({ message: "Invalid id" });
 
-    };
-};
+        const ok = await updateOrderService(id, req.body);
+        if (!ok) return res.status(404).json({ message: "Order not found" });
+
+        res.json({ success: true, message: "Order updated" });
+    } catch (err: any) {
+        res.status(400).json({ message: "Cannot update order.", error: err.message || err });
+    }
+}
