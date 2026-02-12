@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/Assets/images/Logo.png">
     <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -15,7 +16,9 @@
     <!-- Lockscreen -->
     <div class="lockscreen" id="lockscreen">
         <div class="lockscreen-content">
-            <div class="lockscreen-icon">🍌</div>
+            <div class="lockscreen-icon">
+                <img src="/Assets/images/Logo.png" class="lockscreen-logo" alt="Logo">
+            </div>
             <h1 class="lockscreen-title">TURON-AROUND</h1>
             <p class="lockscreen-subtitle">TURON-AROUND KIOSK</p>
             <p class="lockscreen-hint">Touch anywhere to unlock</p>
@@ -47,12 +50,8 @@
         </div>
         <div class="sidebar-categories">
             <button class="category-btn active" onclick="filterProducts('all')">All Products</button>
-            <button class="category-btn" onclick="filterProducts('classic')">🍌 Classic</button>
-            <button class="category-btn" onclick="filterProducts('ube')">💜 Ube</button>
-            <button class="category-btn" onclick="filterProducts('cheese')">🧀 Cheese</button>
-            <button class="category-btn" onclick="filterProducts('chocolate')">🍫 Chocolate</button>
-            <button class="category-btn" onclick="filterProducts('mango')">🥭 Mango</button>
-            <button class="category-btn" onclick="filterProducts('special')">⭐ Special Mix</button>
+            <button class="category-btn" onclick="filterProducts('turon')">🍌 Turon</button>
+            <button class="category-btn" onclick="filterProducts('beverage')">🥤 Beverages</button>
         </div>
     </aside>
 
@@ -63,35 +62,30 @@
                 <p>Click on items to add to order</p>
             </div>
             <div class="products-grid">
-                <div class="product-item" onclick="addToCart('classic', 'Classic Turon', 35)">
-                    <div class="product-icon">🍌</div>
-                    <div class="product-name">Classic Turon</div>
-                    <div class="product-price">₱35.00</div>
-                </div>
-                <div class="product-item" onclick="addToCart('ube', 'Ube Turon', 45)">
-                    <div class="product-icon">💜</div>
+                <div class="product-item" onclick="addToCart('turon', 'Ube Turon', 45)">
+                    <div class="product-icon">🟣</div>
                     <div class="product-name">Ube Turon</div>
-                    <div class="product-price">₱45.00</div>
+                    <div class="product-price">₱15.00</div>
                 </div>
-                <div class="product-item" onclick="addToCart('cheese', 'Cheese Turon', 40)">
+                <div class="product-item" onclick="addToCart('turon', 'Cheese Turon', 40)">
                     <div class="product-icon">🧀</div>
                     <div class="product-name">Cheese Turon</div>
-                    <div class="product-price">₱40.00</div>
+                    <div class="product-price">₱15.00</div>
                 </div>
-                <div class="product-item" onclick="addToCart('chocolate', 'Chocolate Turon', 50)">
+                <div class="product-item" onclick="addToCart('turon', 'Chocolate Turon', 50)">
                     <div class="product-icon">🍫</div>
                     <div class="product-name">Chocolate Turon</div>
-                    <div class="product-price">₱50.00</div>
+                    <div class="product-price">₱15.00</div>
                 </div>
-                <div class="product-item" onclick="addToCart('mango', 'Mango Turon', 55)">
-                    <div class="product-icon">🥭</div>
-                    <div class="product-name">Mango Turon</div>
-                    <div class="product-price">₱55.00</div>
+                <div class="product-item" onclick="addToCart('beverage', 'cucumber Lemonade', 65)">
+                    <div class="product-icon">🥒</div>
+                    <div class="product-name">Cucumber Lemonade</div>
+                    <div class="product-price">₱10.00</div>
                 </div>
-                <div class="product-item" onclick="addToCart('special', 'Special Mix Turon', 65)">
-                    <div class="product-icon">⭐</div>
-                    <div class="product-name">Special Mix</div>
-                    <div class="product-price">₱65.00</div>
+                <div class="product-item" onclick="addToCart('beverage', 'Melon', 65)">
+                    <div class="product-icon">🍈</div>
+                    <div class="product-name">Melon</div>
+                    <div class="product-price">₱10.00</div>
                 </div>
             </div>
         </div>
