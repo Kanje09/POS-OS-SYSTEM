@@ -54,7 +54,7 @@
                     <span class="status-indicator" id="server-status"></span>
                     <span id="server-status-text">Connecting...</span>
                 </div>
-                <button class="btn-logout" onclick="handleLogout()">Logout</button>
+                <button class="logout-btn" id="logout-btn" type="button">Logout</button>
             </div>
         </header>
 
@@ -72,7 +72,7 @@
                         <div class="input-group">
                             <input type="text" id="pickup-code" class="code-input" maxlength="4" placeholder="0000"
                                 inputmode="numeric">
-                            <button class="btn btn-search" onclick="searchOrder()">Search</button>
+                            <button class="btn btn-search">Search</button>
                         </div>
                     </div>
 
@@ -146,8 +146,7 @@
                         <div class="payment-controls">
                             <div class="payment-method-selector">
                                 <label>Select Payment Method:</label>
-                                <select id="payment-method-select" class="method-select"
-                                    onchange="handlePaymentMethodChange()">
+                                <select id="payment-method-select">
                                     <option value="cash">💵 Cash</option>
                                     <option value="gcash">📱 GCash</option>
                                 </select>
@@ -158,7 +157,7 @@
                                 <div class="cash-input-group">
                                     <label for="cash-amount">Amount Received (₱):</label>
                                     <input type="number" id="cash-amount" class="cash-input" placeholder="0.00"
-                                        inputmode="decimal" oninput="calculateChange()">
+                                        inputmode="decimal">
                                 </div>
                                 <div class="change-display" id="change-display" style="display: none;">
                                     <div class="change-info">
@@ -167,9 +166,7 @@
                                                 style="color: var(--success);">₱0.00</strong></span>
                                     </div>
                                 </div>
-                                <button class="btn btn-process-payment" onclick="processPayment('cash')">
-                                    ✓ Complete Payment
-                                </button>
+                                <button class="btn btn-process-payment" id="btn-pay-cash" type="button">Complete Payment</button>
                             </div>
 
                             <!-- GCash Payment UI -->
@@ -181,17 +178,12 @@
                                         </p>
                                     </div>
                                     <div id="qrcode" class="qrcode-container"></div>
-                                    <button class="btn btn-process-payment" onclick="processPayment('gcash')"
-                                        style="margin-top: 15px;">
-                                        ✓ Payment Completed
-                                    </button>
+                                    <button class="btn btn-process-payment" id="btn-pay-gcash" type="button">Complete Payment</button>
                                 </div>
                             </div>
 
-                            <button class="btn btn-refund" onclick="refundPayment()" id="btn-refund"
-                                style="display: none;">
-                                ↩ Refund Payment
-                            </button>
+                            <button class="btn btn-refund" id="btn-refund" type="button">↩ Refund Payment</button>
+
                         </div>
                         <div class="payment-receipt" id="payment-receipt" style="display: none;">
                             <div class="receipt-badge">✓ PAID</div>
@@ -200,18 +192,16 @@
                     </div>
 
                     <div class="action-buttons">
-                        <button class="btn btn-preparing" onclick="updateOrderStatus('preparing')" id="btn-preparing">
+                        <button class="btn btn-preparing" id="btn-preparing">
                             👨‍🍳 Start Preparing
                         </button>
-                        <button class="btn btn-ready" onclick="updateOrderStatus('ready')" id="btn-ready"
-                            style="display: none;">
+                        <button class="btn btn-ready" id="btn-ready" style="display: none;">
                             ✓ Mark as Ready
                         </button>
-                        <button class="btn btn-completed" onclick="updateOrderStatus('completed')" id="btn-completed"
-                            style="display: none;">
+                        <button class="btn btn-completed" id="btn-completed" style="display: none;">
                             ✓ Mark as Completed
                         </button>
-                        <button class="btn btn-cancel" onclick="cancelOrder()">
+                        <button class="btn btn-cancel" id="btn-cancel" type="button">
                             ✕ Cancel Order
                         </button>
                     </div>

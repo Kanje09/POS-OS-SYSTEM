@@ -198,7 +198,7 @@ html, body {
     50% { opacity: 0.5; }
 }
 
-.btn-logout {
+.logout-btn {
     background: var(--danger);
     color: var(--white);
     border: none;
@@ -209,7 +209,7 @@ html, body {
     transition: all 0.2s ease;
 }
 
-.btn-logout:hover {
+.logout-btn:hover {
     background: #d32f2f;
 }
 

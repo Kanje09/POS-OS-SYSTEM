@@ -1,47 +1,121 @@
 import { apiCall, CONFIG } from "./config.js";
 
-// Configuration
-const API_BASE_URL = "https://pos-os-system-1.onrender.com/api"; // Update with your backend URL
+// ===================== CONFIG =====================
+const API_BASE_URL = "https://pos-os-system-1.onrender.com/api";
+
 let currentStaffId = null;
 let currentOrderCode = null;
 let currentOrderData = null;
 let allOrders = [];
 
-// Initialize
+// ===================== INIT =====================
 document.addEventListener("DOMContentLoaded", () => {
   initializeServerStatus();
   setupEventListeners();
 
-  // ✅ Auto-login if token exists
+  // Auto-login if token exists
   const token = localStorage.getItem("pos_token");
   const userRaw = localStorage.getItem("pos_user");
 
   if (token && userRaw) {
-    const user = JSON.parse(userRaw);
-    currentStaffId = user.staff_id;
-    showLoginSuccess(user.name);
+    try {
+      const user = JSON.parse(userRaw);
+      currentStaffId = user.staff_id;
+      showLoginSuccess(user.name);
+    } catch (e) {
+      localStorage.removeItem("pos_token");
+      localStorage.removeItem("pos_user");
+    }
   }
 });
 
-// Setup Event Listeners
 function setupEventListeners() {
-  document.getElementById("login-form").addEventListener("submit", handleLogin);
+  // LOGIN
+  document
+    .getElementById("login-form")
+    ?.addEventListener("submit", handleLogin);
 
-  document.getElementById("pickup-code").addEventListener("keypress", (e) => {
+  // SEARCH ON ENTER
+  document.getElementById("pickup-code")?.addEventListener("keypress", (e) => {
     if (e.key === "Enter") searchOrder();
   });
+
+  // SEARCH BUTTON
+  document.querySelector(".btn-search")?.addEventListener("click", searchOrder);
+
+  // RECENT ORDERS CLICK (event delegation)
+  document
+    .getElementById("recent-orders-list")
+    ?.addEventListener("click", (e) => {
+      const item = e.target.closest(".order-item");
+      if (!item) return;
+
+      const code = item.dataset.code;
+      if (!code) return;
+
+      loadOrderDetails(code);
+    });
+
+  // LOGOUT
+  document
+    .getElementById("logout-btn")
+    ?.addEventListener("click", handleLogout);
+
+  // CANCEL ORDER
+  document.getElementById("btn-cancel")?.addEventListener("click", cancelOrder);
+
+  // STATUS UPDATE BUTTONS
+  document.getElementById("btn-preparing")?.addEventListener("click", () => {
+    updateOrderStatus("preparing");
+  });
+
+  document.getElementById("btn-ready")?.addEventListener("click", () => {
+    updateOrderStatus("ready");
+  });
+
+  document.getElementById("btn-completed")?.addEventListener("click", () => {
+    updateOrderStatus("completed");
+  });
+
+  // PAYMENT BUTTONS
+  document
+    .getElementById("btn-pay-cash")
+    ?.addEventListener("click", () => processPayment("cash"));
+
+  document
+    .getElementById("btn-pay-gcash")
+    ?.addEventListener("click", () => processPayment("gcash"));
+
+  // PAYMENT METHOD CHANGE
+  document
+    .getElementById("payment-method-select")
+    ?.addEventListener("change", handlePaymentMethodChange);
+
+  // CASH INPUT
+  document
+    .getElementById("cash-amount")
+    ?.addEventListener("input", calculateChange);
+
+  // REFUND BUTTON
+  document
+    .getElementById("btn-refund")
+    ?.addEventListener("click", refundPayment);
 }
 
-// ============ AUTHENTICATION ============
-
+// ===================== AUTH =====================
 async function handleLogin(event) {
   event.preventDefault();
 
   const staff_id = document
     .getElementById("staff-id")
-    .value.trim()
+    ?.value.trim()
     .toUpperCase();
-  const password = document.getElementById("password").value;
+  const password = document.getElementById("password")?.value;
+
+  if (!staff_id || !password) {
+    showLoginError("Please enter Staff ID and password");
+    return;
+  }
 
   try {
     const data = await apiCall(CONFIG.ENDPOINTS.STAFF_LOGIN, {
@@ -56,7 +130,7 @@ async function handleLogin(event) {
     showLoginSuccess(data.data.user.name);
   } catch (err) {
     console.error(err);
-    showLoginError(err.message || "Login failed");
+    showLoginError(err?.message || "Login failed");
   }
 }
 
@@ -64,39 +138,51 @@ function showLoginSuccess(staffName) {
   document.getElementById("login-screen").style.display = "none";
   document.getElementById("pos-interface").style.display = "flex";
   document.getElementById("staff-name").textContent = staffName;
+
   showNotification(`Welcome, ${staffName}!`, "success");
   fetchAllOrders();
 }
 
 function showLoginError(message) {
   const errorEl = document.getElementById("login-error");
+  if (!errorEl) return;
+
   errorEl.textContent = message;
   errorEl.style.display = "block";
-  setTimeout(() => {
-    errorEl.style.display = "none";
-  }, 3000);
+  setTimeout(() => (errorEl.style.display = "none"), 3000);
 }
 
 function handleLogout() {
-  if (confirm("Are you sure you want to logout?")) {
-    currentStaffId = null;
-    currentOrderCode = null;
-    currentOrderData = null;
-    allOrders = [];
-    document.getElementById("login-screen").style.display = "flex";
-    document.getElementById("pos-interface").style.display = "none";
-    document.getElementById("staff-id").value = "";
-    document.getElementById("password").value = "";
-    document.getElementById("pickup-code").value = "";
-    showNotification("Logged out successfully", "success");
+  if (!confirm("Are you sure you want to logout?")) return;
 
-    localStorage.removeItem("pos_token");
-    localStorage.removeItem("pos_user");
-  }
+  currentStaffId = null;
+  currentOrderCode = null;
+  currentOrderData = null;
+  allOrders = [];
+
+  localStorage.removeItem("pos_token");
+  localStorage.removeItem("pos_user");
+
+  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("pos-interface").style.display = "none";
+
+  const staffIdEl = document.getElementById("staff-id");
+  const passEl = document.getElementById("password");
+  const pickupEl = document.getElementById("pickup-code");
+
+  if (staffIdEl) staffIdEl.value = "";
+  if (passEl) passEl.value = "";
+  if (pickupEl) pickupEl.value = "";
+
+  // Reset UI
+  const list = document.getElementById("recent-orders-list");
+  if (list) list.innerHTML = '<p class="empty-state">No orders available</p>';
+
+  clearOrderDetails();
+  showNotification("Logged out successfully", "success");
 }
 
-// ============ SERVER STATUS ============
-
+// ===================== SERVER STATUS =====================
 function initializeServerStatus() {
   checkServerStatus();
   setInterval(checkServerStatus, 5000);
@@ -104,13 +190,9 @@ function initializeServerStatus() {
 
 async function checkServerStatus() {
   try {
-    const response = await fetch(`${API_BASE_URL}/ping`, { timeout: 3000 });
-    if (response.ok) {
-      updateServerStatus(true);
-    } else {
-      updateServerStatus(false);
-    }
-  } catch (error) {
+    const response = await fetch(`${API_BASE_URL}/ping`);
+    updateServerStatus(response.ok);
+  } catch {
     updateServerStatus(false);
   }
 }
@@ -118,20 +200,14 @@ async function checkServerStatus() {
 function updateServerStatus(isConnected) {
   const indicator = document.getElementById("server-status");
   const statusText = document.getElementById("server-status-text");
+  if (!indicator || !statusText) return;
 
-  if (isConnected) {
-    indicator.classList.remove("disconnected");
-    indicator.classList.add("connected");
-    statusText.textContent = "Connected";
-  } else {
-    indicator.classList.remove("connected");
-    indicator.classList.add("disconnected");
-    statusText.textContent = "Disconnected";
-  }
+  indicator.classList.toggle("connected", isConnected);
+  indicator.classList.toggle("disconnected", !isConnected);
+  statusText.textContent = isConnected ? "Connected" : "Disconnected";
 }
 
-// ============ FETCHING ORDERS ============
-
+// ===================== FETCH ORDERS =====================
 async function fetchAllOrders() {
   try {
     showLoadingSpinner(true);
@@ -160,9 +236,6 @@ async function fetchAllOrders() {
   } catch (error) {
     console.error("Error fetching orders:", error);
     showNotification("Failed to fetch orders from server", "error");
-
-    // optional fallback
-    useMockOrdersData();
   } finally {
     showLoadingSpinner(false);
   }
@@ -170,13 +243,13 @@ async function fetchAllOrders() {
 
 function updateRecentOrdersList() {
   const list = document.getElementById("recent-orders-list");
+  if (!list) return;
 
   if (allOrders.length === 0) {
     list.innerHTML = '<p class="empty-state">No orders available</p>';
     return;
   }
 
-  // Sort by most recent first and limit to 10
   const recentOrders = [...allOrders]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 10);
@@ -184,10 +257,10 @@ function updateRecentOrdersList() {
   list.innerHTML = recentOrders
     .map(
       (order) => `
-        <div class="order-item" onclick="loadOrderDetails('${order.pickup_code}')">
-            <div class="order-code">Code: #${order.pickup_code}</div>
-            <div class="order-status">Status: ${getStatusLabel(order.status)}</div>
-        </div>
+      <div class="order-item" data-code="${order.pickup_code}">
+        <div class="order-code">Code: #${order.pickup_code}</div>
+        <div class="order-status">Status: ${getStatusLabel(order.status)}</div>
+      </div>
     `,
     )
     .join("");
@@ -205,33 +278,28 @@ function getStatusLabel(status) {
 }
 
 function updateStatusCounts() {
-  const counts = {
-    pending: 0,
-    preparing: 0,
-    ready: 0,
-    completed: 0,
-  };
+  const counts = { pending: 0, preparing: 0, ready: 0, completed: 0 };
 
   allOrders.forEach((order) => {
-    if (counts.hasOwnProperty(order.status)) {
+    if (Object.prototype.hasOwnProperty.call(counts, order.status)) {
       counts[order.status]++;
     }
   });
 
-  document.getElementById("count-pending").textContent = counts.pending;
-  document.getElementById("count-preparing").textContent = counts.preparing;
-  document.getElementById("count-ready").textContent = counts.ready;
-  document.getElementById("count-completed").textContent = counts.completed;
+  const setText = (id, v) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(v);
+  };
+
+  setText("count-pending", counts.pending);
+  setText("count-preparing", counts.preparing);
+  setText("count-ready", counts.ready);
+  setText("count-completed", counts.completed);
 }
 
-// ============ SEARCH ORDER ============
-
-// FIXED searchOrder function for pos.js
-// Replace your current searchOrder function with this
-
+// ===================== SEARCH ORDER =====================
 async function searchOrder() {
-  const code = document.getElementById("pickup-code").value.trim();
-  console.log("🔍 Frontend searching for:", code);
+  const code = document.getElementById("pickup-code")?.value.trim();
 
   if (!code || code.length !== 4) {
     showNotification("Please enter a valid 4-digit code", "error");
@@ -239,17 +307,10 @@ async function searchOrder() {
   }
 
   try {
-    const url = `${API_BASE_URL}/search/${code}`;
-    console.log("📡 Calling URL:", url);
+    const res = await fetch(`${API_BASE_URL}/search/${code}`);
 
-    const res = await fetch(url);
-    console.log("📥 Response status:", res.status);
-    console.log("📥 Response ok:", res.ok);
-
-    // CRITICAL FIX: Check response status BEFORE parsing JSON
     if (!res.ok) {
       const data = await res.json().catch(() => ({ message: "Unknown error" }));
-      console.log("❌ Error response:", data);
       showNotification(
         data.message || `Pickup code ${code} not found`,
         "error",
@@ -258,91 +319,31 @@ async function searchOrder() {
       return;
     }
 
-    // SUCCESS: Parse the JSON data
     const data = await res.json();
-    console.log("📦 Response data:", data);
+    const found = data?.data;
 
-    // Check if data exists
-    if (!data || !data.data) {
-      console.log("❌ No data in response");
+    if (!found) {
       showNotification(`Pickup code ${code} not found`, "error");
       clearOrderDetails();
       return;
     }
 
-    const found = data.data;
-    console.log("✅ Order found:", found);
-
-    // Update the orders list if this is a new order
     const idx = allOrders.findIndex((o) => o.id === found.id);
-    if (idx === -1) {
-      allOrders.unshift(found);
-    } else {
-      allOrders[idx] = found;
-    }
+    if (idx === -1) allOrders.unshift(found);
+    else allOrders[idx] = found;
 
-    // Update UI
     updateRecentOrdersList();
     updateStatusCounts();
-
-    // Load the order details
     loadOrderDetails(found.pickup_code);
-
-    // Show success notification
-    showNotification(
-      `Order #${found.pickup_code} loaded successfully`,
-      "success",
-    );
-  } catch (error) {
-    console.error("💥 Frontend error:", error);
-    console.error("💥 Error details:", error.message);
-    console.error("💥 Error stack:", error.stack);
-    showNotification("Failed to search order. Please try again.", "error");
-    clearOrderDetails();
-  }
-}
-
-// ALTERNATIVE: Even simpler version if the above doesn't work
-async function searchOrderSimple() {
-  const code = document.getElementById("pickup-code").value.trim();
-
-  if (!code || code.length !== 4) {
-    showNotification("Please enter a valid 4-digit code", "error");
-    return;
-  }
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/search/${code}`);
-    const result = await response.json();
-
-    if (response.ok && result.success && result.data) {
-      // SUCCESS - order found
-      const order = result.data;
-
-      // Update orders list
-      const idx = allOrders.findIndex((o) => o.id === order.id);
-      if (idx === -1) {
-        allOrders.unshift(order);
-      } else {
-        allOrders[idx] = order;
-      }
-
-      updateRecentOrdersList();
-      updateStatusCounts();
-      loadOrderDetails(order.pickup_code);
-      showNotification(`Order #${order.pickup_code} loaded`, "success");
-    } else {
-      // ERROR - order not found
-      showNotification(result.message || "Order not found", "error");
-      clearOrderDetails();
-    }
+    showNotification(`Order #${found.pickup_code} loaded`, "success");
   } catch (error) {
     console.error("Search error:", error);
-    showNotification("Search failed. Check console for details.", "error");
+    showNotification("Search failed. Please try again.", "error");
     clearOrderDetails();
   }
 }
 
+// ===================== LOAD DETAILS =====================
 function loadOrderDetails(code) {
   const order = allOrders.find((o) => o.pickup_code === code);
 
@@ -355,63 +356,75 @@ function loadOrderDetails(code) {
   currentOrderCode = code;
   currentOrderData = order;
 
-  // Update UI with order details
   document.getElementById("no-order-selected").style.display = "none";
   document.getElementById("order-details-container").style.display = "block";
 
-  // Fill in order information
-  document.getElementById("detail-pickup-code").textContent = order.pickup_code;
-  document.getElementById("detail-order-number").textContent =
-    `#${order.order_number}`;
-  document.getElementById("detail-status").textContent = getStatusLabel(
-    order.status,
-  );
-  document.getElementById("detail-customer").textContent =
-    order.customer_name || "N/A";
-  document.getElementById("detail-time").textContent = order.created_at;
+  setText("detail-pickup-code", order.pickup_code);
+  setText("detail-order-number", `#${order.order_number}`);
+  setText("detail-status", getStatusLabel(order.status));
+  setText("detail-customer", order.customer_name || "N/A");
+  setText("detail-time", order.created_at);
+
   const totalAmount = parseFloat(order.total_amount) || 0;
-  document.getElementById("detail-total").textContent =
-    `₱${totalAmount.toFixed(2)}`;
-  document.getElementById("detail-payment").textContent =
-    order.payment_method.toUpperCase();
+  setText("detail-total", `₱${totalAmount.toFixed(2)}`);
+  setText("detail-payment", (order.payment_method || "-").toUpperCase());
 
-  // Payment status
-  const paymentStatus = order.payment_status === "paid" ? "✓ Paid" : "Pending";
-  document.getElementById("detail-payment-status").textContent = paymentStatus;
+  setText(
+    "detail-payment-status",
+    order.payment_status === "paid" ? "✓ Paid" : "Pending",
+  );
 
-  // Items list
+  // SAFE items
   const itemsList = document.getElementById("order-items-list");
-  itemsList.innerHTML = order.items
-    .map((item) => {
-      const itemPrice = parseFloat(item.price) || 0;
-      const itemQuantity = parseInt(item.quantity) || 0;
-      const itemTotal = itemPrice * itemQuantity;
+  const items = Array.isArray(order.items) ? order.items : [];
 
-      return `
-    <div class="item-entry">
-      <span class="item-name">${itemQuantity}x ${item.name}</span>
-      <span class="item-price">₱${itemTotal.toFixed(2)}</span>
-    </div>
-  `;
-    })
-    .join("");
+  if (itemsList) {
+    if (items.length === 0) {
+      itemsList.innerHTML = '<p class="empty-state">No items found</p>';
+    } else {
+      itemsList.innerHTML = items
+        .map((item) => {
+          const itemPrice = parseFloat(item.price) || 0;
+          const qty = parseInt(item.quantity) || 0;
+          const itemTotal = itemPrice * qty;
 
-  // Update action buttons based on status
+          return `
+            <div class="item-entry">
+              <span class="item-name">${qty}x ${item.name}</span>
+              <span class="item-price">₱${itemTotal.toFixed(2)}</span>
+            </div>
+          `;
+        })
+        .join("");
+    }
+  }
+
   updateActionButtons(order.status);
-
-  // Update payment UI
   updatePaymentUI();
 
-  // Highlight the selected order in the list
+  // highlight selected
   document
     .querySelectorAll(".order-item")
     .forEach((el) => el.classList.remove("active"));
-  const selectedItem = Array.from(
-    document.querySelectorAll(".order-item"),
-  ).find((el) => el.textContent.includes(code));
-  if (selectedItem) {
-    selectedItem.classList.add("active");
-  }
+  document
+    .querySelector(`.order-item[data-code="${code}"]`)
+    ?.classList.add("active");
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value ?? "";
+}
+
+function clearOrderDetails() {
+  currentOrderCode = null;
+  currentOrderData = null;
+
+  document.getElementById("order-details-container").style.display = "none";
+  document.getElementById("no-order-selected").style.display = "flex";
+
+  const pickup = document.getElementById("pickup-code");
+  if (pickup) pickup.value = "";
 }
 
 function updateActionButtons(status) {
@@ -419,101 +432,62 @@ function updateActionButtons(status) {
   const btnReady = document.getElementById("btn-ready");
   const btnCompleted = document.getElementById("btn-completed");
 
-  // Reset all buttons
-  btnPreparing.style.display = "inline-block";
+  if (!btnPreparing || !btnReady || !btnCompleted) return;
+
+  btnPreparing.style.display = "none";
   btnReady.style.display = "none";
   btnCompleted.style.display = "none";
 
-  // Show appropriate buttons based on status
   if (status === "pending") {
     btnPreparing.style.display = "inline-block";
   } else if (status === "preparing") {
     btnReady.style.display = "inline-block";
   } else if (status === "ready") {
     btnCompleted.style.display = "inline-block";
-  } else if (status === "completed" || status === "cancelled") {
-    btnPreparing.style.display = "none";
-    btnReady.style.display = "none";
-    btnCompleted.style.display = "none";
   }
 }
 
-function clearOrderDetails() {
-  currentOrderCode = null;
-  currentOrderData = null;
-  document.getElementById("order-details-container").style.display = "none";
-  document.getElementById("no-order-selected").style.display = "flex";
-  document.getElementById("pickup-code").value = "";
-}
+// ===================== ORDER ACTIONS =====================
+async function cancelOrder() {
+  if (!currentOrderData) {
+    showNotification("No order selected", "error");
+    return;
+  }
 
-// ============ ORDER ACTIONS ============
-
-async function updateOrderStatus(newStatus) {
-  if (!currentOrderData) return;
+  if (!confirm("Are you sure you want to cancel this order?")) return;
 
   try {
     showLoadingSpinner(true);
 
-    // Call backend API to update order status
     const response = await fetch(`${API_BASE_URL}/${currentOrderData.id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        status: newStatus,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "cancelled" }),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-    // Update local mock data
-    const orderIndex = allOrders.findIndex((o) => o.id === currentOrderData.id);
-    if (orderIndex > -1) {
-      allOrders[orderIndex].status = newStatus;
-      currentOrderData.status = newStatus;
-    }
+    // update local
+    const idx = allOrders.findIndex((o) => o.id === currentOrderData.id);
+    if (idx > -1) allOrders[idx].status = "cancelled";
+    currentOrderData.status = "cancelled";
 
-    // Update UI
-    document.getElementById("detail-status").textContent =
-      getStatusLabel(newStatus);
-    updateActionButtons(newStatus);
-    updateStatusCounts();
     updateRecentOrdersList();
+    updateStatusCounts();
+    loadOrderDetails(currentOrderData.pickup_code);
 
-    const statusMessages = {
-      preparing: "Order marked as preparing...",
-      ready: "Order marked as ready for pickup!",
-      completed: "Order marked as completed!",
-    };
-
-    showNotification(statusMessages[newStatus] || "Order updated", "success");
-    showLoadingSpinner(false);
+    showNotification("Order cancelled", "success");
   } catch (error) {
-    console.error("Error updating order status:", error);
-    showNotification("Failed to update order status", "error");
+    console.error("Cancel error:", error);
+    showNotification("Failed to cancel order", "error");
+  } finally {
     showLoadingSpinner(false);
-
-    // Still update UI optimistically
-    const orderIndex = allOrders.findIndex((o) => o.id === currentOrderData.id);
-    if (orderIndex > -1) {
-      allOrders[orderIndex].status = newStatus;
-      currentOrderData.status = newStatus;
-    }
-    document.getElementById("detail-status").textContent =
-      getStatusLabel(newStatus);
-    updateActionButtons(newStatus);
-    updateStatusCounts();
-    updateRecentOrdersList();
   }
 }
 
-async function cancelOrder() {
-  if (!currentOrderData) return;
-
-  if (!confirm("Are you sure you want to cancel this order?")) {
+async function updateOrderStatus(newStatus) {
+  if (!currentOrderData) {
+    showNotification("No order selected", "error");
     return;
   }
 
@@ -522,49 +496,45 @@ async function cancelOrder() {
 
     const response = await fetch(`${API_BASE_URL}/${currentOrderData.id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        status: "cancelled",
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus }),
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-    // Update local data
-    const orderIndex = allOrders.findIndex((o) => o.id === currentOrderData.id);
-    if (orderIndex > -1) {
-      allOrders[orderIndex].status = "cancelled";
-    }
+    const idx = allOrders.findIndex((o) => o.id === currentOrderData.id);
+    if (idx > -1) allOrders[idx].status = newStatus;
+    currentOrderData.status = newStatus;
 
-    clearOrderDetails();
-    updateStatusCounts();
     updateRecentOrdersList();
-    showNotification("Order has been cancelled", "success");
-    showLoadingSpinner(false);
+    updateStatusCounts();
+    loadOrderDetails(currentOrderData.pickup_code);
+
+    showNotification("Order status updated", "success");
   } catch (error) {
-    console.error("Error cancelling order:", error);
-    showNotification("Failed to cancel order", "error");
+    console.error("Status error:", error);
+    showNotification("Failed to update order status", "error");
+  } finally {
     showLoadingSpinner(false);
   }
 }
 
-// ============ PAYMENT MANAGEMENT ============
-
+// ===================== PAYMENT =====================
 function handlePaymentMethodChange() {
-  const paymentMethod = document.getElementById("payment-method-select").value;
+  const paymentMethod = document.getElementById("payment-method-select")?.value;
   const cashUI = document.getElementById("cash-payment-ui");
   const gcashUI = document.getElementById("gcash-payment-ui");
+
+  if (!cashUI || !gcashUI) return;
 
   if (paymentMethod === "cash") {
     cashUI.style.display = "block";
     gcashUI.style.display = "none";
-    document.getElementById("cash-amount").value = "";
-    document.getElementById("change-display").style.display = "none";
-  } else if (paymentMethod === "gcash") {
+    const cashAmount = document.getElementById("cash-amount");
+    if (cashAmount) cashAmount.value = "";
+    const changeDisplay = document.getElementById("change-display");
+    if (changeDisplay) changeDisplay.style.display = "none";
+  } else {
     cashUI.style.display = "none";
     gcashUI.style.display = "block";
     generateGCashQR();
@@ -574,25 +544,17 @@ function handlePaymentMethodChange() {
 function calculateChange() {
   if (!currentOrderData) return;
 
-  const cashAmount =
-    parseFloat(document.getElementById("cash-amount").value) || 0;
-  const dueAmount = parseFloat(currentOrderData.total_amount);
-  const changeAmount = cashAmount - dueAmount;
+  const cash = parseFloat(document.getElementById("cash-amount")?.value) || 0;
+  const due = parseFloat(currentOrderData.total_amount) || 0;
+  const change = cash - due;
 
   const changeDisplay = document.getElementById("change-display");
+  if (!changeDisplay) return;
 
-  if (cashAmount > 0) {
-    document.getElementById("amount-due").textContent =
-      `₱${dueAmount.toFixed(2)}`;
-    document.getElementById("change-amount").textContent =
-      `₱${changeAmount.toFixed(2)}`;
+  if (cash > 0) {
+    setText("amount-due", `₱${due.toFixed(2)}`);
+    setText("change-amount", `₱${change.toFixed(2)}`);
     changeDisplay.style.display = "block";
-
-    if (changeAmount < 0) {
-      document.getElementById("change-amount").style.color = "var(--danger)";
-    } else {
-      document.getElementById("change-amount").style.color = "var(--success)";
-    }
   } else {
     changeDisplay.style.display = "none";
   }
@@ -600,41 +562,26 @@ function calculateChange() {
 
 function generateGCashQR() {
   if (!currentOrderData) return;
+
   const qrcodeContainer = document.getElementById("qrcode");
-  const totalAmount = parseFloat(currentOrderData.total_amount) || 0;
+  if (!qrcodeContainer) return;
 
-  // Clear container
-  qrcodeContainer.innerHTML = "";
+  const total = parseFloat(currentOrderData.total_amount) || 0;
 
-  // Fixed path - remove leading slash
   qrcodeContainer.innerHTML = `
     <div style="text-align: center;">
-      <img src="./Assets/images/gcash-qr.png" 
-           alt="GCash QR Code" 
-           style="width: 250px; height: 250px; border: 2px solid #0066cc; border-radius: 8px;"
-           onerror="this.onerror=null; this.src='https://via.placeholder.com/250/0066cc/ffffff?text=GCash+QR'; console.error('GCash QR image not found');">
-      <p style="margin-top: 15px; font-size: 16px; font-weight: bold; color: #333;">
-        Scan to Pay
-      </p>
-      <p style="margin: 5px 0; font-size: 14px; color: #666;">
-        Please send exactly: <span style="color: #0066cc; font-weight: bold;">₱${totalAmount.toFixed(2)}</span>
-      </p>
-      <p style="margin: 5px 0; font-size: 12px; color: #999;">
-        Reference: <strong>${currentOrderData.pickup_code}</strong>
-      </p>
-      <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px; border-left: 4px solid #ffc107;">
-        <p style="margin: 0; font-size: 11px; color: #856404;">
-          ⚠️ After payment, click "Payment Completed" button below
-        </p>
-      </div>
+      <img src="./Assets/images/gcash-qr.png"
+           alt="GCash QR Code"
+           style="width: 250px; height: 250px; border-radius: 8px;"
+           onerror="this.onerror=null; this.src='https://via.placeholder.com/250/0066cc/ffffff?text=GCash+QR';">
+      <p style="margin-top: 10px; font-weight: bold;">Scan to Pay</p>
+      <p>Amount: <strong>₱${total.toFixed(2)}</strong></p>
+      <p style="font-size: 12px; color: #777;">Reference: <strong>${currentOrderData.pickup_code}</strong></p>
     </div>
   `;
-}
 
-// Update amount display
-const amountEl = document.getElementById("gcash-amount-text");
-if (amountEl) {
-  amountEl.textContent = `₱${totalAmount.toFixed(2)}`;
+  const amountEl = document.getElementById("gcash-amount-text");
+  if (amountEl) amountEl.textContent = `₱${total.toFixed(2)}`;
 }
 
 async function processPayment(paymentMethod) {
@@ -644,31 +591,23 @@ async function processPayment(paymentMethod) {
       return;
     }
 
-    // Convert DECIMAL string to number
     const total = parseFloat(currentOrderData.total_amount) || 0;
-
     if (total <= 0) {
       showNotification("Invalid total amount", "error");
       return;
     }
 
-    // Validate cash payment
     if (paymentMethod === "cash") {
-      const cashInput = document.getElementById("cash-amount");
-      const cashReceived = parseFloat(cashInput?.value) || 0;
-
+      const cashReceived =
+        parseFloat(document.getElementById("cash-amount")?.value) || 0;
       if (cashReceived < total) {
-        showNotification(
-          `Amount received (₱${cashReceived.toFixed(2)}) is less than amount due (₱${total.toFixed(2)})`,
-          "error",
-        );
+        showNotification("Cash received is less than amount due", "error");
         return;
       }
     }
 
     showLoadingSpinner(true);
 
-    // Use currentOrderData.id, not orderId parameter
     const response = await fetch(`${API_BASE_URL}/${currentOrderData.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -685,110 +624,86 @@ async function processPayment(paymentMethod) {
       throw new Error(errorData.message || `HTTP ${response.status}`);
     }
 
-    // Update local data
-    const orderIndex = allOrders.findIndex((o) => o.id === currentOrderData.id);
-    if (orderIndex > -1) {
-      allOrders[orderIndex].payment_status = "paid";
-      allOrders[orderIndex].payment_method = paymentMethod;
+    // update local
+    const idx = allOrders.findIndex((o) => o.id === currentOrderData.id);
+    if (idx > -1) {
+      allOrders[idx].payment_status = "paid";
+      allOrders[idx].payment_method = paymentMethod;
     }
     currentOrderData.payment_status = "paid";
     currentOrderData.payment_method = paymentMethod;
 
-    // Update UI
     updatePaymentUI();
     updateRecentOrdersList();
     updateStatusCounts();
+    loadOrderDetails(currentOrderData.pickup_code);
 
-    // Show success with change
-    if (paymentMethod === "cash") {
-      const cashInput = document.getElementById("cash-amount");
-      const cashReceived = parseFloat(cashInput?.value) || 0;
-      const change = (cashReceived - total).toFixed(2);
-      showNotification(
-        `Payment of ₱${total.toFixed(2)} received. Change: ₱${change}`,
-        "success",
-      );
-    } else {
-      showNotification(
-        `Payment of ₱${total.toFixed(2)} via GCash received`,
-        "success",
-      );
-    }
-
-    // Reset inputs
-    if (paymentMethod === "cash") {
-      const cashInput = document.getElementById("cash-amount");
-      if (cashInput) cashInput.value = "";
-      const changeDisplay = document.getElementById("change-display");
-      if (changeDisplay) changeDisplay.style.display = "none";
-    }
+    showNotification("Payment completed successfully!", "success");
   } catch (err) {
     console.error("Payment error:", err);
-    showNotification("Failed to process payment: " + err.message, "error");
+    showNotification(
+      `Payment failed: ${err?.message || "Unknown error"}`,
+      "error",
+    );
   } finally {
     showLoadingSpinner(false);
   }
 }
 
-// ✅ expose functions used by inline onclick="" in HTML
-window.searchOrder = searchOrder;
-window.loadOrderDetails = loadOrderDetails;
-window.updateOrderStatus = updateOrderStatus;
-window.cancelOrder = cancelOrder;
-
-window.handlePaymentMethodChange = handlePaymentMethodChange;
-window.calculateChange = calculateChange;
-
-window.processPayment = processPayment;
-window.refundPayment = refundPayment;
-
-window.handleLogout = handleLogout;
-
 async function refundPayment() {
-  if (!currentOrderData) return;
-
-  if (
-    !confirm(
-      `Are you sure you want to refund ₱${parseFloat(currentOrderData.total_amount).toFixed(2)}?`,
-    )
-  ) {
+  if (!currentOrderData) {
+    showNotification("No order selected", "error");
     return;
   }
+
+  if (currentOrderData.payment_status !== "paid") {
+    showNotification("Order has not been paid yet", "error");
+    return;
+  }
+
+  if (!confirm("Are you sure you want to refund this payment?")) return;
 
   try {
     showLoadingSpinner(true);
 
     const response = await fetch(`${API_BASE_URL}/${currentOrderData.id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        payment_status: "refunded",
+        payment_status: "pending",
+        payment_method: null,
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: "Unknown error" }));
+      throw new Error(errorData.message || `HTTP ${response.status}`);
     }
 
-    // Update local data
-    const orderIndex = allOrders.findIndex((o) => o.id === currentOrderData.id);
-    if (orderIndex > -1) {
-      allOrders[orderIndex].payment_status = "refunded";
-      currentOrderData.payment_status = "refunded";
+    // update local
+    const idx = allOrders.findIndex((o) => o.id === currentOrderData.id);
+    if (idx > -1) {
+      allOrders[idx].payment_status = "pending";
+      allOrders[idx].payment_method = null;
     }
+    currentOrderData.payment_status = "pending";
+    currentOrderData.payment_method = null;
 
-    // Update UI
     updatePaymentUI();
+    updateRecentOrdersList();
+    updateStatusCounts();
+    loadOrderDetails(currentOrderData.pickup_code);
+
+    showNotification("Payment refunded successfully", "success");
+  } catch (err) {
+    console.error("Refund error:", err);
     showNotification(
-      `Refund of ₱${parseFloat(currentOrderData.total_amount).toFixed(2)} processed`,
-      "success",
+      `Refund failed: ${err?.message || "Unknown error"}`,
+      "error",
     );
-    showLoadingSpinner(false);
-  } catch (error) {
-    console.error("Error refunding payment:", error);
-    showNotification("Failed to refund payment", "error");
+  } finally {
     showLoadingSpinner(false);
   }
 }
@@ -796,59 +711,40 @@ async function refundPayment() {
 function updatePaymentUI() {
   if (!currentOrderData) return;
 
-  // Update payment status display
-  document.getElementById("detail-payment").textContent =
-    currentOrderData.payment_method?.toUpperCase() || "-";
-
   const paymentStatusEl = document.getElementById("detail-payment-status");
   const paymentReceiptEl = document.getElementById("payment-receipt");
   const btnRefund = document.getElementById("btn-refund");
-  const paymentSection = document.querySelector(".payment-section");
   const paymentMethodSelect = document.getElementById("payment-method-select");
   const cashUI = document.getElementById("cash-payment-ui");
   const gcashUI = document.getElementById("gcash-payment-ui");
 
+  if (
+    !paymentStatusEl ||
+    !paymentReceiptEl ||
+    !btnRefund ||
+    !paymentMethodSelect ||
+    !cashUI ||
+    !gcashUI
+  )
+    return;
+
   if (currentOrderData.payment_status === "paid") {
     paymentStatusEl.textContent = "✓ Paid";
-    paymentStatusEl.style.background = "var(--success)";
-    paymentStatusEl.style.color = "var(--white)";
-
-    // Show payment receipt
-    const now = new Date();
-    document.getElementById("payment-receipt-time").textContent =
-      `Paid on ${now.toLocaleString()}`;
     paymentReceiptEl.style.display = "block";
 
-    // Hide payment method selector and UIs
     paymentMethodSelect.parentElement.style.display = "none";
     cashUI.style.display = "none";
     gcashUI.style.display = "none";
 
-    // Show refund button
     btnRefund.style.display = "inline-block";
-  } else if (currentOrderData.payment_status === "refunded") {
-    paymentStatusEl.textContent = "↩ Refunded";
-    paymentStatusEl.style.background = "#FF9800";
-    paymentStatusEl.style.color = "var(--white)";
-
-    paymentReceiptEl.style.display = "none";
-    btnRefund.style.display = "none";
-    paymentMethodSelect.parentElement.style.display = "none";
-    cashUI.style.display = "none";
-    gcashUI.style.display = "none";
   } else {
-    // Pending payment
     paymentStatusEl.textContent = "⏳ Pending";
-    paymentStatusEl.style.background = "#FFC107";
-    paymentStatusEl.style.color = "var(--darker)";
-
     paymentReceiptEl.style.display = "none";
     btnRefund.style.display = "none";
+
     paymentMethodSelect.parentElement.style.display = "flex";
 
-    // Show the selected payment method UI
-    const selectedMethod = paymentMethodSelect.value;
-    if (selectedMethod === "cash") {
+    if (paymentMethodSelect.value === "cash") {
       cashUI.style.display = "block";
       gcashUI.style.display = "none";
     } else {
@@ -859,12 +755,12 @@ function updatePaymentUI() {
   }
 }
 
-// ============ NOTIFICATIONS ============
-
+// ===================== UI HELPERS =====================
 function showNotification(message, type = "success") {
   const notification = document.getElementById("notification");
   const text = document.getElementById("notification-text");
   const icon = document.getElementById("notification-icon");
+  if (!notification || !text || !icon) return;
 
   notification.classList.remove("error");
   text.textContent = message;
@@ -877,26 +773,16 @@ function showNotification(message, type = "success") {
   }
 
   notification.classList.add("show");
-
-  setTimeout(() => {
-    notification.classList.remove("show");
-  }, 3000);
+  setTimeout(() => notification.classList.remove("show"), 3000);
 }
 
 function showLoadingSpinner(show) {
   const spinner = document.getElementById("loading-spinner");
-  if (show) {
-    spinner.style.display = "flex";
-  } else {
-    spinner.style.display = "none";
-  }
+  if (!spinner) return;
+  spinner.style.display = show ? "flex" : "none";
 }
 
-// ============ AUTO REFRESH ============
-
-// Refresh orders every 10 seconds
+// ===================== AUTO REFRESH =====================
 setInterval(() => {
-  if (currentStaffId) {
-    fetchAllOrders();
-  }
+  if (currentStaffId) fetchAllOrders();
 }, 10000);
