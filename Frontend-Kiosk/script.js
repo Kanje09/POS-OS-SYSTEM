@@ -10,9 +10,10 @@ const lockscreen = document.getElementById("lockscreen");
 // ===================== LOCKSCREEN =====================
 function initLockscreen() {
   const logoImg = document.getElementById("lockscreen-logo");
-  logoImg.src = "./Assets/images/Logo.png";
+  // In script.js - initLockscreen()
+  logoImg.src = "./Assets/images/Logo.png"; // tries this first
   logoImg.onerror = () => {
-    logoImg.src = "./Assets/images/logo.png";
+    logoImg.src = "./Assets/images/logo.png"; // fallback (same folder, lowercase)
   };
 
   document.addEventListener("click", unlockScreen);
