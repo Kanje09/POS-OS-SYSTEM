@@ -1,8 +1,5 @@
 import { apiCall, CONFIG } from "./config.js";
 
-// ===================== CONFIG =====================
-const API_BASE_URL = "https://pos-os-system-1.onrender.com/api";
-
 let currentStaffId = null;
 let currentOrderCode = null;
 let currentOrderData = null;
