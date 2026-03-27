@@ -33,11 +33,11 @@ export const CONFIG = {
   },
 
   ENDPOINTS: {
-    GET_ORDERS: "/order",
-    GET_ORDER_BY_ID: "/order/:id",
-    UPDATE_ORDER: "/order/:id",
+    GET_ORDERS: "/getorder",
+    GET_ORDER_BY_ID: "/search/:code",
+    UPDATE_ORDER: "/:id",
     CREATE_ORDER: "/order",
-    DELETE_ORDER: "/order/:id",
+    DELETE_ORDER: "/:id",
 
     SEARCH_BY_CODE: "/order/search/:code",
 
