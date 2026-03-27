@@ -11,9 +11,9 @@ const lockscreen = document.getElementById("lockscreen");
 function initLockscreen() {
   const logoImg = document.getElementById("lockscreen-logo");
   // In script.js - initLockscreen()
-  logoImg.src = "./Assets/images/Logo.png"; // tries this first
+  logoImg.src = "../Assets/images/Logo.png";
   logoImg.onerror = () => {
-    logoImg.src = "./Assets/images/logo.png"; // fallback (same folder, lowercase)
+    logoImg.src = "../Assets/images/logo.png";
   };
 
   document.addEventListener("click", unlockScreen);
