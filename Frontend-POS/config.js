@@ -33,13 +33,13 @@ export const CONFIG = {
   },
 
   ENDPOINTS: {
-    GET_ORDERS: "/orders",
-    GET_ORDER_BY_ID: "/orders/:id",
-    UPDATE_ORDER: "/orders/:id",
-    CREATE_ORDER: "/orders",
-    DELETE_ORDER: "/orders/:id",
+    GET_ORDERS: "/order",
+    GET_ORDER_BY_ID: "/order/:id",
+    UPDATE_ORDER: "/order/:id",
+    CREATE_ORDER: "/order",
+    DELETE_ORDER: "/order/:id",
 
-    SEARCH_BY_CODE: "/orders/search/:code",
+    SEARCH_BY_CODE: "/order/search/:code",
 
     // ✅ matches your backend
     STAFF_LOGIN: "/auth/login",
