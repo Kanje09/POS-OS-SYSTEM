@@ -9,7 +9,12 @@ import cors from "cors";
 const app = express();
 
 app.use(cors({
-  origin: ["http://127.0.0.1:3000", "http://localhost:3000", "https://pos-os-system-frontend.onrender.com"],
+  origin: [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "https://pos-os-system-frontend.onrender.com",
+    "https://frontend-kiosk.onrender.com",  // ← ADD THIS
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
