@@ -135,6 +135,25 @@
         </div>
     </div>
 
+    <!-- ===================== NOTE MODAL ===================== -->
+    <div class="modal-overlay" id="note-modal">
+        <div class="note-card">
+            <div class="note-header">
+                <span class="note-emoji">📝</span>
+                <h3>Add a Note</h3>
+                <p>Any special requests for your order?</p>
+            </div>
+            <textarea id="order-note-input" class="note-textarea"
+                placeholder="e.g. Less sugar, extra crispy, no sauce..." maxlength="200" rows="4"></textarea>
+            <p class="note-char-hint">Optional — max 200 characters</p>
+            <div class="note-actions">
+                <button class="btn-note-skip" onclick="skipNote()">Skip</button>
+                <button class="btn-note-confirm" onclick="confirmOrderWithNote()">Confirm Order</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== RECEIPT MODAL ===================== -->
     <div class="modal-overlay" id="receipt-modal">
         <div class="receipt-card">
             <div class="receipt-header">
@@ -144,7 +163,12 @@
                 <p>Order: #<span id="r-order-no"></span></p>
             </div>
 
-            <div id="r-items-list" class="receipt-items">
+            <div id="r-items-list" class="receipt-items"></div>
+
+            <!-- Note section on receipt -->
+            <div id="r-note-section" class="receipt-note-section" style="display:none;">
+                <p class="receipt-note-label">📝 Note:</p>
+                <p id="r-note-text" class="receipt-note-text"></p>
             </div>
 
             <div class="receipt-total-section">
@@ -170,9 +194,11 @@
                 <p style="font-size: 0.8rem; color: #666; margin-bottom: 5px;">PICKUP CODE</p>
                 <div class="pickup-code-display" id="r-pickup-code"
                     style="font-size: 2rem; font-weight: bold; color: var(--primary); letter-spacing: 5px; text-align: center;">
-                    0000</div>
-                <p style="font-size: 0.8rem; color: #666; margin-top: 5px; text-align: center;">Customer shows this code
-                    to collect order</p>
+                    0000
+                </div>
+                <p style="font-size: 0.8rem; color: #666; margin-top: 5px; text-align: center;">
+                    Customer shows this code to collect order
+                </p>
             </div>
 
             <div class="receipt-footer">
@@ -183,8 +209,6 @@
         </div>
     </div>
 
-    <!-- Pickup Screen Modal - MOVED TO POS-SYSTEM ONLY -->
-
     <button class="cart-toggle" onclick="toggleCart()">
         🛒
         <span class="cart-badge" id="cart-badge" style="display: none;">0</span>
@@ -194,7 +218,6 @@
         <span class="notification-icon">✓</span>
         <span id="notification-text"></span>
     </div>
-
 
     <script src="script.js"></script>
 </body>

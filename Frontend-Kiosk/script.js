@@ -1,39 +1,32 @@
+const API_BASE_URL = "https://pos-os-system-1.onrender.com/api";
+
 let cart = [];
 let orderNumber = 1;
 let isLocked = true;
+let pendingCheckoutNote = "";
+
 const lockscreen = document.getElementById("lockscreen");
-// Initialize Lockscreen
+
+// ===================== LOCKSCREEN =====================
 function initLockscreen() {
   const logoImg = document.getElementById("lockscreen-logo");
-
-  // Set the logo path dynamically
-  logoImg.src = "./images/logo.png"; // Change to your logo filename
-
-  // Handle image load error (fallback)
-  logoImg.onerror = function () {
-    console.error("Logo failed to load");
-    logoImg.src = "./Assets/images/logo.png"; // Check your folder structure
+  logoImg.src = "./Assets/images/Logo.png";
+  logoImg.onerror = () => {
+    logoImg.src = "./Assets/images/logo.png";
   };
 
-  // Unlock on any touch or click
   document.addEventListener("click", unlockScreen);
   document.addEventListener("touchstart", unlockScreen);
   document.addEventListener("keydown", unlockScreen);
 }
 
-function unlockScreen(e) {
+function unlockScreen() {
   if (!isLocked) return;
-
   isLocked = false;
-
-  // Add unlock animation
   lockscreen.classList.remove("lock-animation");
   lockscreen.classList.add("unlock-animation");
-
-  // Remove lockscreen after animation
   setTimeout(() => {
     lockscreen.style.display = "none";
-    // Remove event listeners to prevent accidental unlocking
     document.removeEventListener("click", unlockScreen);
     document.removeEventListener("touchstart", unlockScreen);
     document.removeEventListener("keydown", unlockScreen);
@@ -42,147 +35,74 @@ function unlockScreen(e) {
 
 function lockScreen() {
   isLocked = true;
-  const lockscreen = document.getElementById("lockscreen");
-  lockscreen.style.display = "flex";
-  lockscreen.classList.remove("unlock-animation");
-  lockscreen.classList.add("lock-animation");
-
+  const ls = document.getElementById("lockscreen");
+  ls.style.display = "flex";
+  ls.classList.remove("unlock-animation");
+  ls.classList.add("lock-animation");
   document.addEventListener("click", unlockScreen);
   document.addEventListener("touchstart", unlockScreen);
   document.addEventListener("keydown", unlockScreen);
 }
 
-// Initialize lockscreen when page loads
 window.addEventListener("load", initLockscreen);
 
-// Category Filtering
-function filterProducts(category) {
-  const productItems = document.querySelectorAll(".product-item");
-  const categoryBtns = document.querySelectorAll(".category-btn");
-
-  categoryBtns.forEach((btn) => btn.classList.remove("active"));
-  event.target.classList.add("active");
-
-  productItems.forEach((item) => {
-    const itemCategory = item.dataset.category;
-
-    if (category === "all" || itemCategory === category) {
-      item.style.display = "block";
-    } else {
-      item.style.display = "none";
-    }
-  });
-}
-// ========== REMOVED: Pickup functions now only in POS-System ==========
-
+// ===================== DATE/TIME =====================
 function updateDateTime() {
   const now = new Date();
-  document.getElementById("current-date").textContent = now.toLocaleDateString(
-    "en-US",
-    {
+  const dateEl = document.getElementById("current-date");
+  const timeEl = document.getElementById("current-time");
+  if (dateEl)
+    dateEl.textContent = now.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
-    },
-  );
-  document.getElementById("current-time").textContent = now.toLocaleTimeString(
-    "en-US",
-    {
+    });
+  if (timeEl)
+    timeEl.textContent = now.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
-    },
-  );
+    });
 }
 updateDateTime();
 setInterval(updateDateTime, 1000);
 
-function addToCart(id, name, price) {
-  const existingItem = cart.find((item) => item.id === id);
+// ===================== CATEGORY FILTER =====================
+function filterProducts(category) {
+  document.querySelectorAll(".product-item").forEach((item) => {
+    item.style.display =
+      category === "all" || item.dataset.category === category
+        ? "block"
+        : "none";
+  });
+  document
+    .querySelectorAll(".category-btn")
+    .forEach((btn) => btn.classList.remove("active"));
+  event.target.classList.add("active");
+}
 
-  if (existingItem) {
-    existingItem.quantity += 1;
+// ===================== CART =====================
+function addToCart(id, name, price) {
+  const existing = cart.find((i) => i.id === id);
+  if (existing) {
+    existing.quantity += 1;
   } else {
     cart.push({ id, name, price, quantity: 1 });
   }
-
   updateCartDisplay();
   showNotification(`${name} added to order`);
 }
 
 function updateQuantity(id, change) {
-  const item = cart.find((item) => item.id === id);
-  if (item) {
-    item.quantity += change;
-    if (item.quantity <= 0) {
-      removeFromCart(id);
-    } else {
-      updateCartDisplay();
-    }
-  }
+  const item = cart.find((i) => i.id === id);
+  if (!item) return;
+  item.quantity += change;
+  if (item.quantity <= 0) removeFromCart(id);
+  else updateCartDisplay();
 }
 
 function removeFromCart(id) {
-  cart = cart.filter((item) => item.id !== id);
+  cart = cart.filter((i) => i.id !== id);
   updateCartDisplay();
-}
-
-function updateCartDisplay() {
-  const cartItems = document.getElementById("cart-items");
-  const cartSummary = document.getElementById("cart-summary");
-  const checkoutBtn = document.getElementById("checkout-btn");
-  const cartBadge = document.getElementById("cart-badge");
-
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-  if (totalItems > 0) {
-    cartBadge.textContent = totalItems;
-    cartBadge.style.display = "flex";
-  } else {
-    cartBadge.style.display = "none";
-  }
-
-  if (cart.length === 0) {
-    cartItems.innerHTML = `
-            <div class="cart-empty">
-                <div class="cart-empty-icon">🛒</div>
-                <p>No items in order</p>
-                <p style="font-size: 0.85rem; margin-top: 0.5rem;">Select products to begin</p>
-            </div>
-        `;
-    cartSummary.style.display = "none";
-    checkoutBtn.disabled = true;
-  } else {
-    cartItems.innerHTML = cart
-      .map(
-        (item) => `
-            <div class="cart-item">
-                <div class="cart-item-header">
-                    <div class="cart-item-name">${item.name}</div>
-                    <button class="cart-item-remove" onclick="removeFromCart('${item.id}')">×</button>
-                </div>
-                <div class="cart-item-details">
-                    <div class="cart-item-price">₱${item.price.toFixed(2)} each</div>
-                    <div class="qty-controls">
-                        <button class="qty-btn" onclick="updateQuantity('${item.id}', -1)">−</button>
-                        <span class="qty-display">${item.quantity}</span>
-                        <button class="qty-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
-                    </div>
-                </div>
-            </div>
-        `,
-      )
-      .join("");
-
-    const subtotal = cart.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0,
-    );
-    document.getElementById("subtotal").textContent = `₱${subtotal.toFixed(2)}`;
-    document.getElementById("total").textContent = `₱${subtotal.toFixed(2)}`;
-
-    cartSummary.style.display = "block";
-    checkoutBtn.disabled = false;
-  }
 }
 
 function clearCart() {
@@ -194,37 +114,122 @@ function clearCart() {
   }
 }
 
-async function checkout() {
+function updateCartDisplay() {
+  const cartItems = document.getElementById("cart-items");
+  const cartSummary = document.getElementById("cart-summary");
+  const checkoutBtn = document.getElementById("checkout-btn");
+  const cartBadge = document.getElementById("cart-badge");
+
+  const totalItems = cart.reduce((sum, i) => sum + i.quantity, 0);
+  if (cartBadge) {
+    cartBadge.textContent = totalItems;
+    cartBadge.style.display = totalItems > 0 ? "flex" : "none";
+  }
+
+  if (!cartItems) return;
+
+  if (cart.length === 0) {
+    cartItems.innerHTML = `
+      <div class="cart-empty">
+        <div class="cart-empty-icon">🛒</div>
+        <p>No items in order</p>
+        <p style="font-size:0.85rem;margin-top:0.5rem;">Select products to begin</p>
+      </div>`;
+    if (cartSummary) cartSummary.style.display = "none";
+    if (checkoutBtn) checkoutBtn.disabled = true;
+    return;
+  }
+
+  cartItems.innerHTML = cart
+    .map(
+      (item) => `
+    <div class="cart-item">
+      <div class="cart-item-header">
+        <div class="cart-item-name">${item.name}</div>
+        <button class="cart-item-remove" onclick="removeFromCart('${item.id}')">×</button>
+      </div>
+      <div class="cart-item-details">
+        <div class="cart-item-price">₱${item.price.toFixed(2)} each</div>
+        <div class="qty-controls">
+          <button class="qty-btn" onclick="updateQuantity('${item.id}', -1)">−</button>
+          <span class="qty-display">${item.quantity}</span>
+          <button class="qty-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
+        </div>
+      </div>
+    </div>`,
+    )
+    .join("");
+
+  const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  document.getElementById("subtotal").textContent = `₱${subtotal.toFixed(2)}`;
+  document.getElementById("total").textContent = `₱${subtotal.toFixed(2)}`;
+
+  if (cartSummary) cartSummary.style.display = "block";
+  if (checkoutBtn) checkoutBtn.disabled = false;
+}
+
+// ===================== NOTE MODAL =====================
+function checkout() {
+  if (cart.length === 0) return;
+  // Show note modal before proceeding
+  const modal = document.getElementById("note-modal");
+  const noteInput = document.getElementById("order-note-input");
+  if (noteInput) noteInput.value = "";
+  if (modal) modal.style.display = "flex";
+}
+
+function closeNoteModal() {
+  document.getElementById("note-modal").style.display = "none";
+}
+
+function confirmOrderWithNote() {
+  const noteInput = document.getElementById("order-note-input");
+  pendingCheckoutNote = noteInput ? noteInput.value.trim() : "";
+  closeNoteModal();
+  processCheckout(pendingCheckoutNote);
+}
+
+function skipNote() {
+  pendingCheckoutNote = "";
+  closeNoteModal();
+  processCheckout("");
+}
+
+// ===================== CHECKOUT =====================
+async function processCheckout(note) {
   if (cart.length === 0) return;
 
+  const checkoutBtn = document.getElementById("checkout-btn");
+  if (checkoutBtn) {
+    checkoutBtn.disabled = true;
+    checkoutBtn.textContent = "Processing...";
+  }
+
   try {
-    const API_BASE_URL = "https://pos-os-system-1.onrender.com/api";
+    const body = {
+      customer_id: null,
+      payment_method: "cash",
+      note: note || null,
+      items: cart.map((it) => ({
+        name: it.name,
+        quantity: it.quantity,
+        price: it.price,
+        product_id: null,
+      })),
+    };
 
     const res = await fetch(`${API_BASE_URL}/order`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        customer_id: null,
-        payment_method: "cash",
-        items: cart.map((it) => ({
-          name: it.name,
-          quantity: it.quantity,
-          price: it.price,
-          product_id: null,
-        })),
-      }),
+      body: JSON.stringify(body),
     });
 
-    // ✅ read ONCE
     const raw = await res.text();
-
-    // ✅ try parse JSON
     let payload = null;
     try {
       payload = JSON.parse(raw);
     } catch {}
 
-    // ✅ handle errors
     if (!res.ok) {
       const msg =
         payload?.message ||
@@ -235,78 +240,89 @@ async function checkout() {
       throw new Error(msg);
     }
 
-    // ✅ success: use payload directly (NO res.json())
     const order = payload.data;
-
-    // ✅ Use BACKEND pickup code + order number
-    const now = new Date();
-    document.getElementById("r-date-time").textContent = now.toLocaleString();
-    document.getElementById("r-order-no").textContent = String(
-      order.order_number,
-    ).padStart(4, "0");
-    document.getElementById("r-pickup-code").textContent = order.pickup_code;
-
-    const itemsList = document.getElementById("r-items-list");
-    itemsList.innerHTML = order.items
-      .map(
-        (item) => `
-        <div class="receipt-line">
-          <span>${item.quantity}x ${item.name}</span>
-          <span>₱${Number(item.total_price).toFixed(2)}</span>
-        </div>
-      `,
-      )
-      .join("");
-
-    document.getElementById("r-subtotal").textContent =
-      `₱${Number(order.total_amount).toFixed(2)}`;
-    document.getElementById("r-total").textContent =
-      `₱${Number(order.total_amount).toFixed(2)}`;
-    document.getElementById("r-cash").textContent =
-      `₱${Number(order.total_amount).toFixed(2)}`;
-    document.getElementById("r-change").textContent = `₱0.00`;
-
-    document.getElementById("receipt-modal").style.display = "flex";
+    showReceipt(order, note);
   } catch (e) {
-    alert(e.message || String(e));
+    showNotification(e.message || "Order failed. Please try again.", "error");
+    console.error("Checkout error:", e);
+  } finally {
+    if (checkoutBtn) {
+      checkoutBtn.disabled = false;
+      checkoutBtn.textContent = "Process Payment";
+    }
   }
+}
+
+// ===================== RECEIPT =====================
+function showReceipt(order, note) {
+  const now = new Date();
+  document.getElementById("r-date-time").textContent = now.toLocaleString();
+  document.getElementById("r-order-no").textContent = String(
+    order.order_number,
+  ).padStart(4, "0");
+  document.getElementById("r-pickup-code").textContent = order.pickup_code;
+
+  const itemsList = document.getElementById("r-items-list");
+  const items = Array.isArray(order.items) ? order.items : [];
+  itemsList.innerHTML = items
+    .map(
+      (item) => `
+    <div class="receipt-line">
+      <span>${item.quantity}x ${item.name}</span>
+      <span>₱${Number(item.total_price ?? item.price * item.quantity).toFixed(2)}</span>
+    </div>`,
+    )
+    .join("");
+
+  // Show note on receipt if present
+  const noteSection = document.getElementById("r-note-section");
+  const noteText = document.getElementById("r-note-text");
+  if (noteSection && noteText) {
+    if (note) {
+      noteText.textContent = note;
+      noteSection.style.display = "block";
+    } else {
+      noteSection.style.display = "none";
+    }
+  }
+
+  const total = Number(order.total_amount);
+  document.getElementById("r-subtotal").textContent = `₱${total.toFixed(2)}`;
+  document.getElementById("r-total").textContent = `₱${total.toFixed(2)}`;
+  document.getElementById("r-cash").textContent = `₱${total.toFixed(2)}`;
+  document.getElementById("r-change").textContent = `₱0.00`;
+
+  document.getElementById("receipt-modal").style.display = "flex";
 }
 
 function closeReceipt() {
   document.getElementById("receipt-modal").style.display = "none";
   cart = [];
   orderNumber++;
-  document.getElementById("order-number").textContent = String(
-    orderNumber,
-  ).padStart(4, "0");
+  const orderNumEl = document.getElementById("order-number");
+  if (orderNumEl) orderNumEl.textContent = String(orderNumber).padStart(4, "0");
   updateCartDisplay();
   showNotification("Thank you for your order!");
-
-  // Lock the screen after a short delay
-  setTimeout(() => {
-    lockScreen();
-  }, 1000);
+  setTimeout(() => lockScreen(), 1000);
 }
 
+// ===================== UI HELPERS =====================
 function showNotification(message) {
   const notification = document.getElementById("notification");
   const notificationText = document.getElementById("notification-text");
+  if (!notification || !notificationText) return;
   notificationText.textContent = message;
   notification.classList.add("show");
-  setTimeout(() => {
-    notification.classList.remove("show");
-  }, 3000);
+  setTimeout(() => notification.classList.remove("show"), 3000);
 }
 
 function toggleCart() {
-  const cartSection = document.getElementById("cart-section");
-  cartSection.classList.toggle("open");
+  document.getElementById("cart-section")?.classList.toggle("open");
 }
 
 function goBack() {
   const cartSection = document.getElementById("cart-section");
-  if (cartSection.classList.contains("open")) {
+  if (cartSection?.classList.contains("open"))
     cartSection.classList.remove("open");
-  }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
