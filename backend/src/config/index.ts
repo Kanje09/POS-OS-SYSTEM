@@ -7,11 +7,11 @@ export const config = {
     PORT: process.env.PORT || 5000,
     NODE_ENV: process.env.NODE_ENV || 'production',
 
-    DB_HOST: process.env.DB_HOST || 'maglev.proxy.rlwy.net',
+    DB_HOST: process.env.DB_HOST || 'gondola.proxy.rlwy.net',
     DB_USER: process.env.DB_USER || 'root',
-    DB_PASSWORD: process.env.DB_PASSWORD || 'LzdDvqNELPxaknLmsydfriCOyOkCntMz',
+    DB_PASSWORD: process.env.DB_PASSWORD || 'llkVenvoIgxpLpWsxQRbTUYiVPvzuaTe',
     DB_NAME: process.env.DB_NAME || 'myposdb',
-    DB_PORT: parseInt(process.env.DB_PORT || '28153'),
+    DB_PORT: parseInt(process.env.DB_PORT || '43243'),
     ssl: false,
 
     JWT_SECRET: process.env.JWT_SECRET || 'your_jwt_secret_key',
