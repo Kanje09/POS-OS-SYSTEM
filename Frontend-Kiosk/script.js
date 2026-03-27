@@ -1,9 +1,10 @@
 let cart = [];
 let orderNumber = 1;
 let isLocked = true;
+const lockscreen = document.getElementById("lockscreen");
 // Initialize Lockscreen
 function initLockscreen() {
-  const lockscreen = document.getElementById("lockscreen");
+  
   const logoImg = document.getElementById("lockscreen-logo");
 
   // Set the logo path dynamically
@@ -25,7 +26,6 @@ function unlockScreen(e) {
   if (!isLocked) return;
 
   isLocked = false;
-  const lockscreen = document.getElementById("lockscreen");
 
   // Add unlock animation
   lockscreen.classList.remove("lock-animation");
@@ -199,7 +199,7 @@ async function checkout() {
   if (cart.length === 0) return;
 
   try {
-    const API_BASE_URL = "https://pos-os-system-1.onrender.com/api";
+    const API_BASE_URL = "'http://localhost:3000";
 
     const res = await fetch(`${API_BASE_URL}/order`, {
       method: "POST",
