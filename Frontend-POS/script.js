@@ -1,5 +1,8 @@
 import { apiCall, CONFIG } from "./config.js";
 
+// ===================== CONFIG =====================
+const API_BASE_URL = CONFIG.API_BASE_URL;
+
 let currentStaffId = null;
 let currentOrderCode = null;
 let currentOrderData = null;
@@ -211,12 +214,15 @@ async function fetchAllOrders() {
 
     const token = localStorage.getItem("pos_token");
 
-    const response = await fetch(`${API_BASE_URL}/getorder`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    const response = await fetch(
+      `${API_BASE_URL}${CONFIG.ENDPOINTS.GET_ORDERS}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       const raw = await response.text().catch(() => "");
