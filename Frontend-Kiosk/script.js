@@ -10,11 +10,15 @@ const lockscreen = document.getElementById("lockscreen");
 // ===================== LOCKSCREEN =====================
 function initLockscreen() {
   const logoImg = document.getElementById("lockscreen-logo");
-  // In script.js - initLockscreen()
-  logoImg.src = "/Assets/images/Logo.png";
+
+  // ✅ Prevent infinite loop - only try once
   logoImg.onerror = () => {
-    logoImg.src = "../Assets/images/logo.png";
+    logoImg.onerror = null; // ← CRITICAL: stops the loop
+    logoImg.style.display = "none"; // just hide it if missing
   };
+
+  logoImg.src =
+    "https://raw.githubusercontent.com/Kanje09/POS-OS-SYSTEM/main/Assets/images/logo.png";
 
   document.addEventListener("click", unlockScreen);
   document.addEventListener("touchstart", unlockScreen);
