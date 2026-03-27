@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://pos-os-system-1.onrender.com/api/order";
+const API_BASE_URL = "https://pos-os-system-1.onrender.com";
 
 let cart = [];
 let orderNumber = 1;
@@ -11,7 +11,7 @@ const lockscreen = document.getElementById("lockscreen");
 function initLockscreen() {
   const logoImg = document.getElementById("lockscreen-logo");
   // In script.js - initLockscreen()
-  logoImg.src = "../Assets/images/Logo.png";
+  logoImg.src = "/Assets/images/Logo.png";
   logoImg.onerror = () => {
     logoImg.src = "../Assets/images/logo.png";
   };
@@ -219,7 +219,7 @@ async function processCheckout(note) {
       })),
     };
 
-    const res = await fetch(`${API_BASE_URL}/order`, {
+    const res = await fetch(`${API_BASE_URL}/api/order`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
