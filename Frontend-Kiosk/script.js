@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://pos-os-system-1.onrender.com/api";
+const API_BASE_URL = "https://pos-os-system-1.onrender.com/api/order";
 
 let cart = [];
 let orderNumber = 1;
