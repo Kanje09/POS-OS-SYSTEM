@@ -4,7 +4,6 @@ let isLocked = true;
 const lockscreen = document.getElementById("lockscreen");
 // Initialize Lockscreen
 function initLockscreen() {
-  
   const logoImg = document.getElementById("lockscreen-logo");
 
   // Set the logo path dynamically
@@ -199,7 +198,7 @@ async function checkout() {
   if (cart.length === 0) return;
 
   try {
-    const API_BASE_URL = "'http://localhost:3000";
+    const API_BASE_URL = "https://pos-os-system-1.onrender.com/api";
 
     const res = await fetch(`${API_BASE_URL}/order`, {
       method: "POST",
