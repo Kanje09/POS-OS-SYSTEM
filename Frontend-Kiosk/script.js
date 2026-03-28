@@ -232,7 +232,7 @@ async function checkout() {
 }
 
 // ===================== RECEIPT =====================
-function showReceipt(order, note) {
+function showReceipt(order) {
   const now = new Date();
   document.getElementById("r-date-time").textContent = now.toLocaleString();
   document.getElementById("r-order-no").textContent = String(
