@@ -3,6 +3,7 @@ const API_BASE_URL = "https://pos-os-system-1.onrender.com";
 let cart = [];
 let orderNumber = 1;
 let isLocked = true;
+let pendingCheckoutNote = "";
 
 const lockscreen = document.getElementById("lockscreen");
 
@@ -10,9 +11,10 @@ const lockscreen = document.getElementById("lockscreen");
 function initLockscreen() {
   const logoImg = document.getElementById("lockscreen-logo");
 
+  // ✅ Prevent infinite loop - only try once
   logoImg.onerror = () => {
-    logoImg.onerror = null;
-    logoImg.style.display = "none";
+    logoImg.onerror = null; // ← CRITICAL: stops the loop
+    logoImg.style.display = "none"; // just hide it if missing
   };
 
   logoImg.src =
@@ -172,7 +174,6 @@ function updateCartDisplay() {
 }
 
 // ===================== CHECKOUT =====================
-// Called directly by onclick="checkout()" on the Process Payment button
 async function checkout() {
   if (cart.length === 0) return;
 
@@ -186,6 +187,7 @@ async function checkout() {
     const body = {
       customer_id: null,
       payment_method: "cash",
+      note: note || null,
       items: cart.map((it) => ({
         name: it.name,
         quantity: it.quantity,
@@ -216,9 +218,10 @@ async function checkout() {
       throw new Error(msg);
     }
 
-    showReceipt(payload.data);
+    const order = payload.data;
+    showReceipt(order, note);
   } catch (e) {
-    showNotification(e.message || "Order failed. Please try again.");
+    showNotification(e.message || "Order failed. Please try again.", "error");
     console.error("Checkout error:", e);
   } finally {
     if (checkoutBtn) {
@@ -229,7 +232,7 @@ async function checkout() {
 }
 
 // ===================== RECEIPT =====================
-function showReceipt(order) {
+function showReceipt(order, note) {
   const now = new Date();
   document.getElementById("r-date-time").textContent = now.toLocaleString();
   document.getElementById("r-order-no").textContent = String(
