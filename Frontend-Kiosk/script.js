@@ -3,7 +3,6 @@ const API_BASE_URL = "https://pos-os-system-1.onrender.com";
 let cart = [];
 let orderNumber = 1;
 let isLocked = true;
-let pendingCheckoutNote = "";
 
 const lockscreen = document.getElementById("lockscreen");
 
@@ -11,10 +10,9 @@ const lockscreen = document.getElementById("lockscreen");
 function initLockscreen() {
   const logoImg = document.getElementById("lockscreen-logo");
 
-  // ✅ Prevent infinite loop - only try once
   logoImg.onerror = () => {
-    logoImg.onerror = null; // ← CRITICAL: stops the loop
-    logoImg.style.display = "none"; // just hide it if missing
+    logoImg.onerror = null;
+    logoImg.style.display = "none";
   };
 
   logoImg.src =
@@ -174,7 +172,8 @@ function updateCartDisplay() {
 }
 
 // ===================== CHECKOUT =====================
-async function processCheckout(note) {
+// Called directly by onclick="checkout()" on the Process Payment button
+async function checkout() {
   if (cart.length === 0) return;
 
   const checkoutBtn = document.getElementById("checkout-btn");
@@ -187,7 +186,6 @@ async function processCheckout(note) {
     const body = {
       customer_id: null,
       payment_method: "cash",
-      note: note || null,
       items: cart.map((it) => ({
         name: it.name,
         quantity: it.quantity,
@@ -218,10 +216,9 @@ async function processCheckout(note) {
       throw new Error(msg);
     }
 
-    const order = payload.data;
-    showReceipt(order, note);
+    showReceipt(payload.data);
   } catch (e) {
-    showNotification(e.message || "Order failed. Please try again.", "error");
+    showNotification(e.message || "Order failed. Please try again.");
     console.error("Checkout error:", e);
   } finally {
     if (checkoutBtn) {
@@ -232,7 +229,7 @@ async function processCheckout(note) {
 }
 
 // ===================== RECEIPT =====================
-function showReceipt(order, note) {
+function showReceipt(order) {
   const now = new Date();
   document.getElementById("r-date-time").textContent = now.toLocaleString();
   document.getElementById("r-order-no").textContent = String(
@@ -251,18 +248,6 @@ function showReceipt(order, note) {
     </div>`,
     )
     .join("");
-
-  // Show note on receipt if present
-  const noteSection = document.getElementById("r-note-section");
-  const noteText = document.getElementById("r-note-text");
-  if (noteSection && noteText) {
-    if (note) {
-      noteText.textContent = note;
-      noteSection.style.display = "block";
-    } else {
-      noteSection.style.display = "none";
-    }
-  }
 
   const total = Number(order.total_amount);
   document.getElementById("r-subtotal").textContent = `₱${total.toFixed(2)}`;
