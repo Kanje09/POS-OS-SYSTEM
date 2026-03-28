@@ -173,33 +173,6 @@ function updateCartDisplay() {
   if (checkoutBtn) checkoutBtn.disabled = false;
 }
 
-// ===================== NOTE MODAL =====================
-function checkout() {
-  if (cart.length === 0) return;
-  // Show note modal before proceeding
-  const modal = document.getElementById("note-modal");
-  const noteInput = document.getElementById("order-note-input");
-  if (noteInput) noteInput.value = "";
-  if (modal) modal.style.display = "flex";
-}
-
-function closeNoteModal() {
-  document.getElementById("note-modal").style.display = "none";
-}
-
-function confirmOrderWithNote() {
-  const noteInput = document.getElementById("order-note-input");
-  pendingCheckoutNote = noteInput ? noteInput.value.trim() : "";
-  closeNoteModal();
-  processCheckout(pendingCheckoutNote);
-}
-
-function skipNote() {
-  pendingCheckoutNote = "";
-  closeNoteModal();
-  processCheckout("");
-}
-
 // ===================== CHECKOUT =====================
 async function processCheckout(note) {
   if (cart.length === 0) return;
