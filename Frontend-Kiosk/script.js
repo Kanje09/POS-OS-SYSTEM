@@ -174,6 +174,7 @@ function updateCartDisplay() {
 }
 
 // ===================== CHECKOUT =====================
+// Called directly by onclick="checkout()" on the Process Payment button
 async function checkout() {
   if (cart.length === 0) return;
 
@@ -187,7 +188,6 @@ async function checkout() {
     const body = {
       customer_id: null,
       payment_method: "cash",
-      note: note || null,
       items: cart.map((it) => ({
         name: it.name,
         quantity: it.quantity,
@@ -218,10 +218,9 @@ async function checkout() {
       throw new Error(msg);
     }
 
-    const order = payload.data;
-    showReceipt(order, note);
+    showReceipt(payload.data);
   } catch (e) {
-    showNotification(e.message || "Order failed. Please try again.", "error");
+    showNotification(e.message || "Order failed. Please try again.");
     console.error("Checkout error:", e);
   } finally {
     if (checkoutBtn) {
